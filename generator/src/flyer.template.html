@@ -47,12 +47,14 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 input[type=radio],input[type=checkbox],input[type=range]{accent-color:var(--red)}
 .sl{display:grid;grid-template-columns:92px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:13px}
 .sl output{font-variant-numeric:tabular-nums;text-align:right;color:var(--muted);font-size:12px}
-.pal{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.pal div{border:1px solid var(--line)}
-.pal i{display:block;height:30px}
-.pal span{display:block;padding:4px 6px;font-size:10px;line-height:1.3;font-variant-numeric:tabular-nums}
-.pal span b{display:block;font-family:var(--display);font-stretch:85%;text-transform:uppercase;letter-spacing:.06em;font-weight:650}
-.pal .ok{color:var(--ok)}.pal .low{color:var(--warn)}
+.swatches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sw{background:var(--panel);border:1px solid var(--line);padding:0;cursor:pointer;text-align:left;color:var(--paper);font:inherit}
+.sw:hover{border-color:var(--muted)}
+.sw[aria-checked=true]{border-color:var(--paper);box-shadow:0 0 0 1px var(--paper)}
+.sw:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.sw i{display:block;height:40px}
+.sw span{display:block;padding:5px 7px;font-size:11px;line-height:1.3;font-variant-numeric:tabular-nums}
+.sw span b{display:block;font-family:var(--display);font-stretch:85%;text-transform:uppercase;letter-spacing:.06em;font-weight:650}
 .export{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:20px}
 .export .line{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .export select{width:auto}
@@ -117,12 +119,16 @@ ILLROCK</textarea>
   </div>
 
   <div class="field">
-    <span class="k">Kiemelő szín</span>
-    <div class="radios" role="radiogroup" aria-label="Kiemelő szín">
-      <label><input type="radio" name="acc" id="acc-img" value="img" checked> A képből</label>
-      <label><input type="radio" name="acc" id="acc-brand" value="brand"> Jelpiros (#D52727)</label>
-    </div>
-    <div class="pal" id="pal" aria-live="polite"></div>
+    <span class="k">Feliratok mérete</span>
+    <label class="sl" for="f-lock">Logó, dátum<input type="range" id="f-lock" min="70" max="140" value="100"><output id="o-lock">100%</output></label>
+    <label class="sl" for="f-lu">Fellépők<input type="range" id="f-lu" min="60" max="160" value="100"><output id="o-lu">100%</output></label>
+    <p class="hint">Az első csúszka a VANDALISM logót, a dátumot és a japán feliratot méretezi, a második a fellépők nevét.</p>
+  </div>
+
+  <div class="field">
+    <span class="k">Betűszín</span>
+    <div class="swatches" id="pal" role="radiogroup" aria-label="Betűszín"></div>
+    <p class="hint">Három élénk szín a feltöltött képből. A logó, a dátum és a fellépők ezt kapják.</p>
   </div>
 
   <div class="field">
@@ -150,14 +156,14 @@ ILLROCK</textarea>
 <div class="stage" id="stage"></div>
 </div>
 
-<p class="note">A dátumkör, a line-up, a katakana és a logó a kép kiemelő színét kapja, az infóblokk papírfehér. Ha a kép szinte szürke, a Jelpiros lép be. A japán feliratokat használat előtt érdemes anyanyelvi szakemberrel ellenőriztetni.</p>
+<p class="note">A logó, a dátumkör, a japán felirat és a fellépők a választott betűszínt kapják, az infóblokk papírfehér. A három szín minden új háttérképnél újra kiszámolódik. A japán feliratokat használat előtt érdemes anyanyelvi szakemberrel ellenőriztetni.</p>
 </div>
 
 <script>
 (function(){
 'use strict';
 const WORDMARK='__WORDMARK__', MONOGRAM='__MONOGRAM__', SAMPLE='__SAMPLE__';
-const BRAND='#D52727', KATAKANA='バンダリズム';
+const KATAKANA='バンダリズム';
 const GROT='"Inter","Helvetica Neue",Helvetica,Arial,sans-serif';
 const SERIF='"BIZ UDPMincho","Yu Mincho","MS Mincho","Times New Roman",serif';
 const JP='"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif';
@@ -167,9 +173,9 @@ const MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST',
 // R = right edge of the "VANDALISM" lettering, top = logo top (star tip), gap = line-up
 // top below the date circle centre (in L). Info = V✦ block: bottom-left, or top-left on 16:9.
 const FORMATS=[
- {id:'16x9',W:1920,H:1080,name:'16:9',use:'Facebook esemény, YouTube, kijelző',L:.40,R:.913,top:.144,gap:.24,lu:.17,maxB:.95,ix:.047,iy:.06,top0:true,is:.0156,fx:.5,fy:.5},
- {id:'4x5',W:1080,H:1350,name:'4:5',use:'Instagram poszt',L:.57,R:.91,top:.093,gap:.45,lu:.2,maxB:.84,ix:.208,iy:.937,is:.027,fx:.3,fy:.5},
- {id:'9x16',W:1080,H:1920,name:'9:16',use:'Story, Reels',L:.66,R:.914,top:.182,gap:.44,lu:.18,maxB:.86,ix:.213,iy:.943,is:.027,fx:.3,fy:.5}];
+ {id:'16x9',W:1920,H:1080,name:'16:9',use:'Facebook esemény, YouTube, kijelző',L:.40,R:.913,top:.144,gap:.29,lu:.13,maxB:.95,ix:.047,iy:.06,top0:true,is:.0156,fx:.5,fy:.5},
+ {id:'4x5',W:1080,H:1350,name:'4:5',use:'Instagram poszt',L:.57,R:.91,top:.093,gap:.48,lu:.155,maxB:.84,ix:.208,iy:.937,is:.027,fx:.3,fy:.5},
+ {id:'9x16',W:1080,H:1920,name:'9:16',use:'Story, Reels',L:.66,R:.914,top:.182,gap:.46,lu:.135,maxB:.86,ix:.213,iy:.943,is:.027,fx:.3,fy:.5}];
 FORMATS.forEach(f=>{f.fx0=f.fx;f.fy0=f.fy;});
 const WORD_AR=1426.18/4764.51, MONO_AR=1172/832;
 
@@ -215,16 +221,34 @@ function analyse(src,sw,sh){
  const P=pixels(src,sw,sh);const cl=kmeans(P,7);const lp=lightPeaks(P);
  const darks=cl.filter(c=>c.L<0.35).sort((a,b)=>b.w-a.w);const bgC=darks[0]||[...cl].sort((a,b)=>a.L-b.L)[0];
  const bg=lchRgb(Math.min(bgC.L,0.16),Math.min(bgC.C,0.035),bgC.h);
- let acc=null;
- if(lp.share>0.004&&lp.peaks.length){const p=lp.peaks[0];let L=0.63;const C=Math.max(p.C,0.3);acc=lchRgb(L,C,p.h);while(ratio(acc,bg)<3&&L<0.9){L+=0.02;acc=lchRgb(L,C,p.h);}}
+ // hue sources, strongest first: light sources, then the most colourful areas
+ const hues=[];
+ if(lp.share>0.004)lp.peaks.forEach(p=>hues.push(p.h));
+ cl.filter(c=>c.C>0.035).sort((a,b)=>b.C*b.w-a.C*a.w).forEach(c=>hues.push(c.h));
+ const accs=pickAccents(hues,bg);
  let pL=0.94;let paper=lchRgb(pL,0.012,bgC.h);while(ratio(paper,bg)<7&&pL<0.99){pL+=0.01;paper=lchRgb(pL,0.012,bgC.h);}
- return {bg,accImg:acc,paper};}
-function palette(){const p=S.pal||{bg:h2r('#0A0B0C'),accImg:null,paper:h2r('#EDE9E1')};
- const brand=document.querySelector('input[name=acc]:checked').value==='brand';
- return {bg:p.bg,paper:p.paper,acc:(brand||!p.accImg)?h2r(BRAND):p.accImg,grey:!p.accImg};}
-function showPalette(){const p=palette();
- const sw=(n,c,min)=>{const r=ratio(c,p.bg);return `<div><i style="background:${hex(c)}"></i><span><b>${n}</b>${hex(c)}${min?`<br><span class="${r>=min?'ok':'low'}">${r.toFixed(1)}:1</span>`:''}</span></div>`;};
- $('pal').innerHTML=sw('Háttér',p.bg)+sw('Kiemelő',p.acc,3)+sw('Papír',p.paper,7)+`<div><i style="background:${BRAND}"></i><span><b>Jelpiros</b>${p.grey?'<br>szürke kép':'tartalék'}</span></div>`;}
+ return {bg,accs,paper};}
+// Three lettering colours per background: image hues pushed to neon chroma and lifted until they
+// stand out (at least 4:1 on the background). Missing slots come from the house set used so far:
+// signal red, hot pink, sodium orange, magenta.
+const DEG=Math.PI/180, HOUSE=[29,4,58,330].map(d=>d*DEG);
+const hueDist=(a,b)=>{let d=Math.abs(a-b)%(2*Math.PI);return d>Math.PI?2*Math.PI-d:d;};
+function vivid(h,bg){const d=((h/DEG)%360+360)%360;// oranges and yellows only reach full chroma when lighter
+ let L=.62+.24*Math.max(0,1-Math.abs(d-90)/55),c=lchRgb(L,.32,h);while(ratio(c,bg)<4&&L<.86){L+=.02;c=lchRgb(L,.32,h);}return c;}
+function pickAccents(hues,bg){const pick=[];
+ for(const h of hues){if(pick.length===3)break;if(pick.every(p=>hueDist(p,h)>=38*DEG))pick.push(h);}
+ const warm=h=>{const d=((h/DEG)%360+360)%360;return d>=320||d<=70;};
+ if(pick.length===3&&!pick.some(warm))pick.pop();
+ const ref=pick.length?pick[0]:HOUSE[0];
+ [...HOUSE].sort((a,b)=>hueDist(a,ref)-hueDist(b,ref)).forEach(h=>{if(pick.length<3&&pick.every(p=>hueDist(p,h)>=30*DEG))pick.push(h);});
+ return pick.map(h=>({h,c:vivid(h,bg)}));}
+function hueName(h){const d=((h/DEG)%360+360)%360;
+ return d<15?'Rózsaszín':d<42?'Piros':d<75?'Narancs':d<115?'Sárga':d<170?'Zöld':d<235?'Türkiz':d<275?'Kék':d<300?'Lila':d<345?'Magenta':'Rózsaszín';}
+const DEFAULT_PAL={bg:h2r('#0A0B0C'),paper:h2r('#EDE9E1'),accs:pickAccents([],h2r('#0A0B0C'))};
+function palette(){const p=S.pal||DEFAULT_PAL,a=p.accs[Math.min(S.accIdx||0,p.accs.length-1)];return {bg:p.bg,paper:p.paper,acc:a.c};}
+function showPalette(){const p=S.pal||DEFAULT_PAL;
+ $('pal').innerHTML=p.accs.map((a,i)=>`<button type="button" class="sw" role="radio" aria-checked="${i===(S.accIdx||0)}" data-i="${i}"><i style="background:${hex(a.c)}"></i><span><b>${hueName(a.h)}</b>${hex(a.c)}</span></button>`).join('');}
+$('pal').addEventListener('click',e=>{const b=e.target.closest('.sw');if(!b)return;S.accIdx=+b.dataset.i;showPalette();renderAll();});
 
 /* ---------- drawing ---------- */
 let noise=null;
@@ -262,7 +286,7 @@ function draw(f,cv){
 
  // accent lockup on its own layer, so it can glow as one piece
  const lay=document.createElement('canvas');lay.width=W;lay.height=H;const y=lay.getContext('2d');
- const L=f.L*W,R=f.R*W,T=f.top*H;
+ const L0=f.L*W,L=L0*v('lock'),R=Math.min(f.R*W,.975*W-.1*L),T=Math.max(.03*H,f.top*H-.35*(L-L0)),lus=v('lu');
  if(imgs.word)y.drawImage(tinted(imgs.word,L,L*WORD_AR,acc),R-.90*L,T,L,L*WORD_AR);
  const cx=R-.30*L,cy=T+.49*L,r=.19*L;
  y.strokeStyle=acc;y.fillStyle=acc;y.lineWidth=.011*L;y.beginPath();y.arc(cx,cy,r,0,Math.PI*2);y.stroke();
@@ -276,12 +300,12 @@ function draw(f,cv){
  colStack([...F.month],R-.535*L,.052*L,`500 ${.052*L}px ${GROT}`);
  colStack([...KATAKANA],R-.065*L,.056*L,`300 ${.056*L}px ${JP}`);
  if(F.names.length){
-  let size=f.lu*L,b0,step;
+  let size=f.lu*L0*lus,b0,step;const maxW=Math.min(1.1*L0*Math.max(1,lus),R-.03*W);
   for(let it=0;it<60;it++){
    y.font=`500 ${size}px ${GROT}`;track(y,-.02*size);
    const mw=Math.max(...F.names.map(n=>y.measureText(n).width));
-   if(mw>1.25*L){size*=1.25*L/mw;continue;}
-   step=1.25*size;b0=cy+f.gap*L+.72*size;
+   if(mw>maxW){size*=maxW/mw;continue;}
+   step=1.32*size;b0=cy+.19*L+(f.gap-.19)*L0+.72*size;
    if(b0+(F.names.length-1)*step+.05*size<=f.maxB*H||size<.02*L)break;
    size*=.95;}
   y.textAlign='right';y.textBaseline='alphabetic';
@@ -323,7 +347,7 @@ function renderAll(){if(queued)return;queued=true;requestAnimationFrame(()=>{que
 
 async function setBackground(src,name){
  try{const im=await loadImg(src);S.img=im;S.iw=im.naturalWidth;S.ih=im.naturalHeight;S.name=name;
-  S.pal=analyse(im,S.iw,S.ih);FORMATS.forEach(f=>{f.fx=f.fx0;f.fy=f.fy0;});
+  S.pal=analyse(im,S.iw,S.ih);S.accIdx=0;FORMATS.forEach(f=>{f.fx=f.fx0;f.fy=f.fy0;});
   $('thumb').src=src;$('bgname').textContent=name;showPalette();renderAll();status('');}
  catch(e){status('Ezt a fájlt nem tudtam képként megnyitni. Próbáld JPG, PNG vagy WebP formátumban.');}}
 function readFile(file){if(!file||!file.type.startsWith('image/')){status('Ez nem képfájl. JPG, PNG vagy WebP képet tölts fel.');return;}
@@ -335,9 +359,8 @@ const drop=$('drop');
 drop.addEventListener('drop',e=>readFile(e.dataTransfer.files[0]));
 window.addEventListener('paste',e=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it){e.preventDefault();readFile(it.getAsFile());}});
 $('form').addEventListener('submit',e=>e.preventDefault());
-$('form').addEventListener('input',e=>{['zoom','shade','grain','grade','glow'].forEach(k=>{$('o-'+k).textContent=$('f-'+k).value+(k==='zoom'?'%':'');});
- if(e.target.name==='acc')showPalette();renderAll();});
-$('form').addEventListener('change',e=>{if(e.target.name==='acc'){showPalette();renderAll();}});
+$('form').addEventListener('input',e=>{['zoom','lock','lu','shade','grain','grade','glow'].forEach(k=>{$('o-'+k).textContent=$('f-'+k).value+(['zoom','lock','lu'].includes(k)?'%':'');});
+ renderAll();});
 $('reset').addEventListener('click',()=>{FORMATS.forEach(f=>{f.fx=f.fx0;f.fy=f.fy0;});$('f-zoom').value=100;$('o-zoom').textContent='100%';renderAll();});
 
 /* ---------- export ---------- */
