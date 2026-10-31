@@ -3,6 +3,7 @@
 | Mappa | Mi ez |
 |---|---|
 | [`videovago/`](videovago/README.md) | Veszteségmentes, offline videóvágó és -forgató (ffmpeg, újrakódolás nélkül) |
+| [`videovago-android/`](videovago-android/README.md) | Ugyanez natív Android appként (APK a GitHub Actions buildből) |
 | `generator/`, `moodboard/` | Vandalism flyer generátor (lent) |
 
 # Vandalism flyer generátor
