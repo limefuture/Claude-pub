@@ -1,0 +1,568 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Vandalism Moodboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=BIZ+UDPMincho&family=Noto+Sans+JP:wght@300;500&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --ink:#0A0B0C; --panel:#111415; --line:#232A2B; --concrete:#2E403F; --teal:#6F8F8A;
+  --red:#D52727; --paper:#EDE9E1; --muted:#8C9593; --sodium:#F28A1E; --amber:#FFB347;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --serif:"BIZ UDPMincho","Yu Mincho","MS Mincho","Times New Roman",serif;
+  --jp:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--ink);color:var(--paper);font-family:var(--serif);font-size:15px;line-height:1.6;padding-inline:clamp(16px,4vw,56px);padding-block:0 64px}
+a{color:var(--paper);text-decoration-color:var(--red);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto}
+header{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;padding-block:48px 32px;border-bottom:1px solid var(--line)}
+header .logo{width:min(640px,100%);display:block}
+.jpv{font-family:var(--jp);font-weight:300;writing-mode:vertical-rl;color:var(--red);font-size:22px;letter-spacing:.12em}
+.info{display:flex;gap:14px;align-items:center;margin-top:28px;text-transform:uppercase;font-size:14px;line-height:1.45;letter-spacing:.02em}
+.info img{height:44px;width:auto}
+.lede{max-width:62ch;color:var(--muted);margin-top:20px}
+h2{font-family:var(--display);font-stretch:72%;font-weight:750;text-transform:uppercase;font-size:clamp(34px,6vw,64px);line-height:.95;letter-spacing:.005em;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-stretch:90%;font-weight:650;text-transform:uppercase;font-size:13px;letter-spacing:.14em;color:var(--muted);margin:0 0 10px}
+section{padding-block:56px;border-bottom:1px solid var(--line)}
+.sechead{display:grid;grid-template-columns:auto 1fr;gap:18px 28px;align-items:end;margin-bottom:28px}
+.letter{font-family:var(--display);font-stretch:62%;font-weight:800;font-size:clamp(72px,12vw,140px);line-height:.8;color:var(--red)}
+.jp{font-family:var(--jp);font-weight:500;color:var(--red);font-size:18px;letter-spacing:.08em;margin-bottom:6px}
+.desc{max-width:64ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.chips li{font-family:var(--display);font-stretch:85%;font-size:12px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);padding:3px 9px}
+ul.plain{margin:0;padding-left:18px}
+ul.plain li{margin-bottom:4px}
+.studies{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
+@media (max-width:520px){.studies{grid-template-columns:1fr}}
+figure{margin:0}
+figure canvas,figure svg,figure img.ph{display:block;width:100%;height:auto;aspect-ratio:4/5;background:#000;max-width:100%}
+figcaption{font-size:12px;color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;gap:8px}
+figcaption b{font-family:var(--display);font-stretch:85%;font-weight:650;text-transform:uppercase;letter-spacing:.08em;color:var(--paper)}
+.tag{font-family:var(--display);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);white-space:nowrap}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:28px}
+.sw{border:1px solid var(--line)}
+.sw i{display:block;height:64px}
+.sw span{display:block;padding:6px 8px;font-size:11px;line-height:1.35;font-variant-numeric:tabular-nums}
+.sw span b{display:block;font-family:var(--display);font-stretch:85%;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+.refs{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.refs li{background:var(--ink)}
+.refs a{display:block;padding:12px 14px;text-decoration:none;height:100%}
+.refs a:hover{background:var(--panel)}
+.refs small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.refs a:hover b{color:var(--red)}
+.refs b{font-weight:400}
+/* base system */
+.base{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:36px;align-items:start}
+.base .hero img{width:100%;display:block}
+.formats{display:grid;grid-template-columns:16fr 9fr;gap:10px;margin-top:10px;align-items:end}
+.formats img{width:100%;display:block}
+.elements{display:grid;gap:0;border-top:1px solid var(--line)}
+.el{display:grid;grid-template-columns:140px 1fr;gap:16px;padding-block:14px;border-bottom:1px solid var(--line);align-items:center}
+.el .k{font-family:var(--display);font-stretch:85%;font-weight:650;text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--muted)}
+.el .v small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+.spec-grot{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:500;color:var(--red);font-size:30px;line-height:.95;letter-spacing:-.02em}
+.datebadge{display:flex;align-items:center;gap:8px}
+.datebadge .circ{width:74px;height:74px;border:3px solid var(--red);border-radius:50%;display:grid;place-items:center;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:36px;color:var(--red);font-weight:400}
+.datebadge .m{display:flex;flex-direction:column;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:11px;line-height:1.05;color:var(--red)}
+.next{background:var(--panel);border:1px solid var(--line);padding:22px 24px;margin-top:40px;max-width:80ch}
+.next h3{color:var(--red)}
+.note{font-size:12px;color:var(--muted);margin-top:28px;max-width:80ch}
+/* palette tool */
+.pal-tool{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:36px;margin-top:28px;align-items:start;--p-bg:#0A0B0C;--p-mid:#2E403F;--p-acc:#D52727;--p-acc2:#F28A1E;--p-paper:#EDE9E1}
+.pal-src{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.srcbtn{font-family:var(--display);font-stretch:85%;font-size:12px;text-transform:uppercase;letter-spacing:.08em;background:transparent;color:var(--paper);border:1px solid var(--line);padding:6px 10px;cursor:pointer}
+.srcbtn:hover{border-color:var(--muted)}
+.srcbtn.is-on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.srcbtn:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.upl{border-style:dashed}
+.drop{border:1px dashed transparent;transition:border-color .2s}
+.drop.over{border-color:var(--red)}
+.drophint{font-size:12px;color:var(--muted);margin:8px 0 0}
+.mini{position:relative;aspect-ratio:4/5;max-width:100%;overflow:hidden;background:var(--p-bg);container-type:inline-size}
+.mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:30% 50%}
+.mini-shade{position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--p-bg) 70%,transparent) 78%),linear-gradient(0deg,color-mix(in srgb,var(--p-bg) 85%,transparent),transparent 30%)}
+.mini-logo{position:absolute;right:6%;top:9%;width:64%;aspect-ratio:4764.51/1426.18;background:var(--p-acc);-webkit-mask:url(logo/VANDALISM_logo_feher.svg) center/contain no-repeat;mask:url(logo/VANDALISM_logo_feher.svg) center/contain no-repeat}
+.mini-date{position:absolute;right:11%;top:27%;display:flex;align-items:center;gap:2cqw;color:var(--p-acc);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
+.mini-date .mm{display:flex;flex-direction:column;font-size:3.2cqw;line-height:1.1}
+.mini-date .mm i{font-style:normal}
+.mini-date .dc{width:30cqw;aspect-ratio:1;border:.9cqw solid var(--p-acc);border-radius:50%;display:grid;place-items:center;font-size:15cqw;line-height:1}
+.mini-date .kv{font-family:var(--jp);font-weight:300;writing-mode:vertical-rl;font-size:4.2cqw;letter-spacing:.1em}
+.mini-lu{position:absolute;right:11%;top:64%;text-align:right;color:var(--p-acc);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:500;font-size:8.2cqw;line-height:.98;letter-spacing:-.02em}
+.mini-info{position:absolute;left:8%;bottom:5%;display:flex;gap:3cqw;align-items:center;color:var(--p-paper);font-family:var(--serif);text-transform:uppercase;font-size:2.9cqw;line-height:1.35}
+.mini-v{width:10cqw;aspect-ratio:1172/832;background:var(--p-paper);-webkit-mask:url(logo/V-monogram_feher.svg) center/contain no-repeat;mask:url(logo/V-monogram_feher.svg) center/contain no-repeat;flex:none}
+.modes{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;margin-bottom:16px}
+.modes input{accent-color:var(--red)}
+.roles{display:grid;gap:0;border-top:1px solid var(--line)}
+.role{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding-block:10px;border-bottom:1px solid var(--line)}
+.role i{display:block;width:56px;height:40px;border:1px solid var(--line)}
+.role b{display:block;font-family:var(--display);font-stretch:85%;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+.role small{color:var(--muted);font-size:12px}
+.role code{font-family:var(--serif);font-size:13px;font-variant-numeric:tabular-nums;text-align:right}
+.role .ok{color:#8FC9A0}.role .low{color:#F2C230}
+.strip{display:flex;height:28px;border:1px solid var(--line)}
+.strip span{display:block;height:100%}
+.pal-actions{display:flex;gap:12px;align-items:center;margin-top:18px}
+.copybtn{font-family:var(--display);font-stretch:85%;font-weight:650;text-transform:uppercase;letter-spacing:.1em;font-size:12px;background:var(--red);color:#fff;border:0;padding:9px 14px;cursor:pointer}
+.copybtn:focus-visible{outline:2px solid var(--paper);outline-offset:2px}
+.muted{color:var(--muted);font-size:12px}
+.tokens{background:var(--panel);border:1px solid var(--line);padding:12px 14px;font-size:12px;line-height:1.6;overflow-x:auto;margin:10px 0 0;user-select:all}
+@media (max-width:760px){.pal-tool{grid-template-columns:1fr}}
+@media (max-width:760px){.base{grid-template-columns:1fr}.el{grid-template-columns:1fr;gap:6px}header{grid-template-columns:1fr}.jpv{writing-mode:horizontal-tb}}
+@media (prefers-reduced-motion:no-preference){figure canvas{transition:filter .3s}figure:hover canvas{filter:brightness(1.12)}}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <img class="logo" src="logo/VANDALISM_logo_piros.svg" alt="VANDALISM logó dobócsillaggal">
+    <div class="info">
+      <img src="logo/V-monogram_feher.svg" alt="V monogram">
+      <div>Vandalism @ Moodboard<br>2025.SEPT.25. Budapest<br><span style="font-family:var(--jp)">バンダリズム</span></div>
+    </div>
+    <p class="lede">A következő buli flyerének képi irányai. Az alapváz a ROOTS-os flyerből jön, a kulcsvizuál három irányban változhat: <b>A</b> Wangan / mélygarázs, <b>D</b> tuningmatrica, <b>F</b> drill noir. A négyzetes mintalapok saját vázlatok, a linkek valódi fotós referenciák.</p>
+  </div>
+  <div class="jpv" aria-hidden="true">バンダリズム</div>
+</header>
+
+<section id="alap">
+  <div class="sechead">
+    <div class="letter">V✦</div>
+    <div><div class="jp">基本 · alapváz</div><h2>Ami minden flyeren fix</h2></div>
+  </div>
+  <div class="base">
+    <div>
+      <div class="hero"><img src="img/roots_4x5.webp" alt="ROOTS flyer 4:5"></div>
+      <div class="formats">
+        <img src="img/roots_16x9.webp" alt="ROOTS flyer 16:9">
+        <img src="img/roots_9x16.webp" alt="ROOTS flyer 9:16">
+      </div>
+      <figcaption><b>ROOTS · 2025.03.21.</b><span>4:5 · 16:9 · 9:16</span></figcaption>
+    </div>
+    <div class="elements">
+      <div class="el"><div class="k">Logó</div><div class="v"><img src="logo/VANDALISM_logo_feher.svg" alt="" style="width:260px;max-width:100%"><small>A dobócsillag mindig a felirat jobb felső sarkán ül. Lapos piros vagy fehér változatban, a TELEP-es krómozás effektként rátehető.</small></div></div>
+      <div class="el"><div class="k">Dátum</div><div class="v"><div class="datebadge"><div class="m"><span>M</span><span>A</span><span>R</span><span>C</span><span>H</span></div><div class="circ">21</div></div><small>Körbe írt nap nagy groteszk betűvel, mellette betűnként függőlegesen a hónap. A logó rálóghat a kör tetejére.</small></div></div>
+      <div class="el"><div class="k">Line-up</div><div class="v"><div class="spec-grot">FXRX<br>ILLROCK</div><small>Groteszk, közepes vagy félkövér súly, szoros betűköz, jobbra zárva, piros.</small></div></div>
+      <div class="el"><div class="k">Katakana</div><div class="v"><span style="font-family:var(--jp);font-weight:300;color:var(--red);font-size:22px;letter-spacing:.1em">バンダリズム</span><small>Vékony gothic betű, függőlegesen a dátumkör mellett.</small></div></div>
+      <div class="el"><div class="k">Infóblokk</div><div class="v"><div style="display:flex;gap:12px;align-items:center;text-transform:uppercase;font-size:14px;line-height:1.4"><img src="logo/V-monogram_feher.svg" alt="" style="height:40px">VANDALISM @ ROOTS<br>2025.MARCH.21. BUDAPEST<br><span style="font-family:var(--serif)">バンダリズム</span></div><small>Mincho betű (japán talpas), fehér, három sor, alul a sarokban, a V✦ jel mellett.</small></div></div>
+      <div class="el"><div class="k">Textúra</div><div class="v">Szemcse, finom por és karc, sötét szélek.<small>A kép sötét tónusú, a piros a fényforrásokból jön (lámpák, féklámpa), nem ráfestett szín.</small></div></div>
+    </div>
+  </div>
+  <div class="swatches" aria-label="Alap paletta">
+    <div class="sw"><i style="background:#D52727"></i><span><b>Jelpiros</b>#D52727</span></div>
+    <div class="sw"><i style="background:#0A0B0C"></i><span><b>Éjfekete</b>#0A0B0C</span></div>
+    <div class="sw"><i style="background:#2E403F"></i><span><b>Beton</b>#2E403F</span></div>
+    <div class="sw"><i style="background:#6F8F8A"></i><span><b>Neoncső-zöld</b>#6F8F8A</span></div>
+    <div class="sw"><i style="background:#EDE9E1"></i><span><b>Papírfehér</b>#EDE9E1</span></div>
+  </div>
+</section>
+
+<section id="paletta">
+  <div class="sechead">
+    <div class="letter" style="font-size:clamp(56px,9vw,104px)">配色</div>
+    <div><div class="jp">haishoku · színrend</div><h2>Paletta a háttérképből</h2></div>
+  </div>
+  <p class="desc">A flyer színei mindig az aktuális háttérképből jönnek. Az oldal kiszámolja a kép fő színeit, és mindegyikhez szerepet rendel. A háttér a kép legsötétebb nagy felülete lesz, a kiemelő a legerősebb fényforrás. Ezt kapja a logó, a dátum és a line-up. A szöveg papírfehér marad, a kép árnyalatával tonizálva. Válassz mintát, vagy tölts fel saját képet.</p>
+  <div class="pal-tool">
+    <div class="pal-left">
+      <div class="pal-src" role="group" aria-label="Háttérkép forrása">
+        <button type="button" class="srcbtn is-on" data-src="img/roots_16x9.webp">ROOTS fotó</button>
+        <button type="button" class="srcbtn" data-canvas="a1">A · alagút</button>
+        <button type="button" class="srcbtn" data-canvas="a3">A · garázs</button>
+        <button type="button" class="srcbtn" data-canvas="f2">F · eső</button>
+        <label class="srcbtn upl" for="palfile">Saját kép…</label>
+        <input type="file" id="palfile" accept="image/*" hidden>
+      </div>
+      <div class="drop" id="paldrop">
+        <div class="mini" id="palmini">
+          <img id="palimg" alt="Kiválasztott háttérkép" src="img/roots_16x9.webp">
+          <div class="mini-shade"></div>
+          <div class="mini-logo" aria-hidden="true"></div>
+          <div class="mini-date" aria-hidden="true"><span class="mm"><i>M</i><i>A</i><i>R</i><i>C</i><i>H</i></span><span class="dc">21</span><span class="kv">バンダリズム</span></div>
+          <div class="mini-lu" aria-hidden="true">FXRX<br>ILLROCK</div>
+          <div class="mini-info" aria-hidden="true"><span class="mini-v"></span><span>VANDALISM @ ROOTS<br>2025.MARCH.21. BUDAPEST<br>バンダリズム</span></div>
+        </div>
+        <p class="drophint">Húzz ide egy képet, vagy válassz fent. A kép nem kerül fel sehova, csak a böngésződben dolgozom fel.</p>
+      </div>
+    </div>
+    <div class="pal-right">
+      <div class="modes" role="radiogroup" aria-label="Kiemelő szín">
+        <label><input type="radio" name="accmode" id="acc-img" value="img" checked> Kiemelő a képből</label>
+        <label><input type="radio" name="accmode" id="acc-brand" value="brand"> Jelpiros marad (#D52727)</label>
+      </div>
+      <div class="roles" id="palroles"></div>
+      <h3 style="margin-top:22px">A kép színei (k-közép klaszterek, arány szerint)</h3>
+      <div class="strip" id="palstrip" aria-label="Klaszterek aránya"></div>
+      <div class="pal-actions">
+        <button type="button" id="palcopy" class="copybtn">Tokenek másolása</button>
+        <span id="palcopied" class="muted" aria-live="polite"></span>
+      </div>
+      <pre class="tokens" id="paltokens"></pre>
+    </div>
+  </div>
+  <div class="next" style="margin-top:28px">
+    <h3>Szabály a Design Systemhez</h3>
+    <ol class="plain" style="margin:0;padding-left:20px">
+      <li><b>Háttér:</b> a kép legsötétebb nagy felülete, sötétítve és kicsit tompítva. A kép szélén ebbe fut ki az átmenet.</li>
+      <li><b>Közép:</b> a leggyakoribb középtónus, például a beton vagy az aszfalt. Keretekhez, vékony vonalakhoz használható.</li>
+      <li><b>Kiemelő:</b> a legtelítettebb fényforrás, egységes világosságra hozva. Ezt kapja a logó, a dátumkör, a line-up és a katakana. Ha a kép szinte szürke, a Jelpiros (#D52727) lép be.</li>
+      <li><b>Második fény:</b> a másik fényforrás, ha az árnyalata legalább 40°-kal eltér. Csak kis felületen, például a 140 BPM jelölésben.</li>
+      <li><b>Papír:</b> majdnem fehér, a kép árnyalatával tonizálva. Ezt kapja az infóblokk és a V✦ jel.</li>
+      <li><b>Kontrasztminimum:</b> a papír a háttéren legalább 7:1, a kiemelő legalább 3:1. Ha nincs meg, a kiemelő világosodik, amíg eléri.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="a">
+  <div class="sechead">
+    <div class="letter">A</div>
+    <div><div class="jp">湾岸 · 地下駐車場</div><h2>Wangan éjfélkor / mélygarázs</h2></div>
+  </div>
+  <div class="cols">
+    <div class="desc">
+      <h3>Hangulat</h3>
+      <p>A ROOTS közvetlen folytatása. Éjszakai gyorsforgalmi út Tokió és Jokohama között, nátriumlámpás alagutak, a Daikoku parkoló spirálja, mélygarázs neoncsővel. Az autó csak részletként jelenik meg: féklámpa, hátsó szárny, kipufogó. A fény meséli el a sebességet.</p>
+    </div>
+    <div>
+      <h3>A flyeren</h3>
+      <ul class="plain">
+        <li>Fotós kulcsvizuál, az autó a kép egyik szélén, levágva.</li>
+        <li>A logó és a dátum a sötét, üres oldalon, pirosban.</li>
+        <li>Mozgás: hosszú záridős fénycsíkok, elmosódott háttér.</li>
+        <li>Második kiemelő szín lehet a nátrium-narancs, de csak a fényekben.</li>
+      </ul>
+      <h3 style="margin-top:18px">Kulcsszavak</h3>
+      <ul class="chips"><li>Shuto expressway</li><li>Daikoku PA</li><li>long exposure</li><li>taillight</li><li>sodium lamp</li><li>parking garage</li></ul>
+    </div>
+  </div>
+  <div class="studies">
+    <figure><canvas id="a1" width="800" height="1000"></canvas><figcaption><b>Alagút, nátriumlámpák</b><span class="tag">saját vázlat</span></figcaption></figure>
+    <figure><canvas id="a2" width="800" height="1000"></canvas><figcaption><b>Féklámpa-csíkok</b><span class="tag">saját vázlat</span></figcaption></figure>
+    <figure><canvas id="a3" width="800" height="1000"></canvas><figcaption><b>Mélygarázs, neoncső</b><span class="tag">saját vázlat</span></figcaption></figure>
+  </div>
+  <div class="swatches">
+    <div class="sw"><i style="background:#F28A1E"></i><span><b>Nátrium</b>#F28A1E</span></div>
+    <div class="sw"><i style="background:#D52727"></i><span><b>Féklámpa</b>#D52727</span></div>
+    <div class="sw"><i style="background:#1B2A2C"></i><span><b>Alagút</b>#1B2A2C</span></div>
+    <div class="sw"><i style="background:#6F8F8A"></i><span><b>Neoncső</b>#6F8F8A</span></div>
+    <div class="sw"><i style="background:#070808"></i><span><b>Aszfalt</b>#070808</span></div>
+  </div>
+  <ul class="refs">
+    <li><a href="https://commons.wikimedia.org/wiki/Category:Daikoku_Parking_Area" target="_blank" rel="noopener"><b>Daikoku PA fotók</b><small>commons.wikimedia.org · szabad licencű képek</small></a></li>
+    <li><a href="https://detour-roadtrips.com/home/detour-191-shooting-the-shuto-tokyo-japan" target="_blank" rel="noopener"><b>Éjszakai fotózás a Shuto autópályán</b><small>detour-roadtrips.com</small></a></li>
+    <li><a href="https://www.pinterest.com/ideas/mid-night-club-japan/898984807065/" target="_blank" rel="noopener"><b>Mid Night Club Japan</b><small>pinterest.com</small></a></li>
+    <li><a href="https://www.pinterest.com/lanniecao/wangan-midnight-team-midnight/" target="_blank" rel="noopener"><b>Wangan Midnight / Team Midnight</b><small>pinterest.com</small></a></li>
+    <li><a href="https://unsplash.com/s/photos/tokyo-highway-night" target="_blank" rel="noopener"><b>Tokiói autópálya éjjel</b><small>unsplash.com · forrásfotónak is</small></a></li>
+    <li><a href="https://unsplash.com/s/photos/underground-parking-car" target="_blank" rel="noopener"><b>Autó mélygarázsban</b><small>unsplash.com · forrásfotónak is</small></a></li>
+  </ul>
+</section>
+
+<section id="d">
+  <div class="sechead">
+    <div class="letter">D</div>
+    <div><div class="jp">ステッカー · デカール</div><h2>Tuningmatrica-ív</h2></div>
+  </div>
+  <div class="cols">
+    <div class="desc">
+      <h3>Hangulat</h3>
+      <p>A 90-es évek japán tuningműhelyeinek grafikája: szponzormatricák, rajtszám, szélvédőcsík, figyelmeztető címkék, az Option magazin borítói. Ez inkább grafikai réteg, mint önálló kép. Egy sötét autós fotóra vagy egy tiszta fekete lapra kerül rá.</p>
+    </div>
+    <div>
+      <h3>A flyeren</h3>
+      <ul class="plain">
+        <li>Az előadók neve matricaként jelenik meg, mintha szponzorok lennének.</li>
+        <li>A 140 BPM a fordulatszámmérő piros mezője.</li>
+        <li>A dátumkör rajtszám-táblává alakítható.</li>
+        <li>Csak kitalált műhelyjelek szerepeljenek, valódi márkalogó nem.</li>
+      </ul>
+      <h3 style="margin-top:18px">Kulcsszavak</h3>
+      <ul class="chips"><li>decal sheet</li><li>sticker bomb</li><li>windshield banner</li><li>race number</li><li>Option magazine</li><li>Tokyo Auto Salon</li></ul>
+    </div>
+  </div>
+  <div class="studies">
+    <figure><svg id="d1" viewBox="0 0 400 500" role="img" aria-label="Matricaív vázlat"></svg><figcaption><b>Matricaív kitalált jelekkel</b><span class="tag">saját vázlat</span></figcaption></figure>
+    <figure><svg id="d2" viewBox="0 0 400 500" role="img" aria-label="BPM fordulatszámmérő vázlat"></svg><figcaption><b>140 BPM mint piros mező</b><span class="tag">saját vázlat</span></figcaption></figure>
+    <figure><svg id="d3" viewBox="0 0 400 500" role="img" aria-label="Szélvédőcsík és rajtszám vázlat"></svg><figcaption><b>Szélvédőcsík + rajtszám</b><span class="tag">saját vázlat</span></figcaption></figure>
+  </div>
+  <div class="swatches">
+    <div class="sw"><i style="background:#D52727"></i><span><b>Jelpiros</b>#D52727</span></div>
+    <div class="sw"><i style="background:#EDE9E1"></i><span><b>Matricafehér</b>#EDE9E1</span></div>
+    <div class="sw"><i style="background:#F2C230"></i><span><b>Figyelmeztető sárga</b>#F2C230</span></div>
+    <div class="sw"><i style="background:#9DA3A6"></i><span><b>Alumínium</b>#9DA3A6</span></div>
+    <div class="sw"><i style="background:#0A0B0C"></i><span><b>Karbon</b>#0A0B0C</span></div>
+  </div>
+  <ul class="refs">
+    <li><a href="https://japanesenostalgiccar.com/the-legendof-option/" target="_blank" rel="noopener"><b>Az Option magazin története</b><small>japanesenostalgiccar.com</small></a></li>
+    <li><a href="https://www.pinterest.com/ideas/option-magazine/896425961995/" target="_blank" rel="noopener"><b>Option magazin borítók</b><small>pinterest.com</small></a></li>
+    <li><a href="https://stickydiljoe.com/2018/09/24/a-look-back-at-tokyo-salon-2006/" target="_blank" rel="noopener"><b>Tokyo Auto Salon 2006</b><small>stickydiljoe.com</small></a></li>
+    <li><a href="https://www.pinterest.com/ideas/jdm-graphic-design/908037085101/" target="_blank" rel="noopener"><b>JDM grafika</b><small>pinterest.com</small></a></li>
+    <li><a href="https://en.wikipedia.org/wiki/RE_Amemiya" target="_blank" rel="noopener"><b>RE Amemiya, grafikus festések</b><small>en.wikipedia.org</small></a></li>
+    <li><a href="https://www.behance.net/search/projects/JDM" target="_blank" rel="noopener"><b>JDM projektek</b><small>behance.net</small></a></li>
+  </ul>
+</section>
+
+<section id="f">
+  <div class="sechead">
+    <div class="letter">F</div>
+    <div><div class="jp">監視カメラ · 雨</div><h2>Drill noir / UK bass</h2></div>
+  </div>
+  <div class="cols">
+    <div class="desc">
+      <h3>Hangulat</h3>
+      <p>A drill és a 140-es UK bass hangulata. Esős, szemcsés éjszaka, biztonsági kamera képe időbélyeggel, vakus fotó durva fény-árnyékkal. A Burial-borítók elmosott városa japán közegben. Ez a legsötétebb irány, a piros itt a legkevesebb.</p>
+    </div>
+    <div>
+      <h3>A flyeren</h3>
+      <ul class="plain">
+        <li>A kép nagy része szinte fekete, a figura vagy az autó csak sejlik.</li>
+        <li>Kamera-felület: időbélyegben a buli dátuma, REC jel, képkocka-szám.</li>
+        <li>Erős szemcse, esőcsíkok, kicsit elcsúszott színcsatornák.</li>
+        <li>A logó fehér, a piros csak a REC jelben és a dátumban.</li>
+      </ul>
+      <h3 style="margin-top:18px">Kulcsszavak</h3>
+      <ul class="chips"><li>CCTV still</li><li>rain night</li><li>flash photo</li><li>film grain</li><li>Burial</li><li>hooded figure</li></ul>
+    </div>
+  </div>
+  <div class="studies">
+    <figure><canvas id="f1" width="800" height="1000"></canvas><figcaption><b>Kamerakép időbélyeggel</b><span class="tag">saját vázlat</span></figcaption></figure>
+    <figure><canvas id="f2" width="800" height="1000"></canvas><figcaption><b>Eső és elmosott fények</b><span class="tag">saját vázlat</span></figcaption></figure>
+    <figure><canvas id="f3" width="800" height="1000"></canvas><figcaption><b>Vakus fény, szemcse</b><span class="tag">saját vázlat</span></figcaption></figure>
+  </div>
+  <div class="swatches">
+    <div class="sw"><i style="background:#050606"></i><span><b>Mélyfekete</b>#050606</span></div>
+    <div class="sw"><i style="background:#1E2627"></i><span><b>Esőszürke</b>#1E2627</span></div>
+    <div class="sw"><i style="background:#8FA8A3"></i><span><b>Monitorzöld</b>#8FA8A3</span></div>
+    <div class="sw"><i style="background:#D52727"></i><span><b>REC piros</b>#D52727</span></div>
+    <div class="sw"><i style="background:#E8E6E0"></i><span><b>Vakufehér</b>#E8E6E0</span></div>
+  </div>
+  <ul class="refs">
+    <li><a href="https://hyperdub.net/en-us/collections/burial" target="_blank" rel="noopener"><b>Burial borítók</b><small>hyperdub.net</small></a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Burial_(Burial_album)" target="_blank" rel="noopener"><b>Burial (2006) album</b><small>en.wikipedia.org</small></a></li>
+    <li><a href="https://www.endclothing.com/row/features/traversing-an-ephemeral-culture-with-kode9-the-hyperdub-crew" target="_blank" rel="noopener"><b>Kode9 és a Hyperdub csapat</b><small>endclothing.com</small></a></li>
+    <li><a href="https://unsplash.com/s/photos/rain-night-city" target="_blank" rel="noopener"><b>Esős éjszakai város</b><small>unsplash.com · forrásfotónak is</small></a></li>
+    <li><a href="https://unsplash.com/s/photos/cctv" target="_blank" rel="noopener"><b>Biztonsági kamera</b><small>unsplash.com</small></a></li>
+  </ul>
+</section>
+
+<div class="next">
+  <h3>Következő lépés</h3>
+  <p style="margin:0">Ha kéred, a linkelt szabad licencű oldalakról (Unsplash, Wikimedia) valódi fotókat is beteszek irányonként. Ehhez engedélyt kérek a letöltésre. Utána jöhet a Claude Design Design System és a prompt.</p>
+</div>
+<p class="note">A mintalapok saját vázlatok, nem kész flyerek. A japán feliratokat (irányok alcímei, katakana) használat előtt ellenőriztesd anyanyelvi szakemberrel. A linkelt képek licencét külön ellenőrizni kell, a Pinterest- és Behance-anyagok csak inspirációk.</p>
+</div>
+
+<script>
+(function(){
+const RED='#D52727';
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;}}
+function grain(ctx,w,h,amt,seed){const r=rng(seed);const id=ctx.getImageData(0,0,w,h),d=id.data;for(let i=0;i<d.length;i+=4){const n=(r()-.5)*amt;d[i]+=n;d[i+1]+=n;d[i+2]+=n;}ctx.putImageData(id,0,0);}
+function vignette(ctx,w,h,s){const g=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.25,w/2,h/2,Math.max(w,h)*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,'+s+')');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+function c(id){const el=document.getElementById(id);return [el.getContext('2d'),el.width,el.height];}
+
+// A1 tunnel with sodium lamps
+(function(){const [x,w,h]=c('a1');const vx=w*.56,vy=h*.44;x.fillStyle='#07090a';x.fillRect(0,0,w,h);
+ const g=x.createRadialGradient(vx,vy,4,vx,vy,w*.9);g.addColorStop(0,'#3a2a14');g.addColorStop(.35,'#1b1a16');g.addColorStop(1,'#050606');x.fillStyle=g;x.fillRect(0,0,w,h);
+ // walls lines
+ x.strokeStyle='rgba(111,143,138,.18)';x.lineWidth=2;for(let i=0;i<14;i++){const t=i/13;x.beginPath();x.moveTo(vx,vy);x.lineTo(-40,h*t*1.2-60);x.stroke();x.beginPath();x.moveTo(vx,vy);x.lineTo(w+40,h*t*1.2-60);x.stroke();}
+ // lamps along ceiling
+ for(let i=1;i<26;i++){const t=Math.pow(i/26,2.2);const lx=vx+(w*.05-vx)*t*1.6, ly=vy+(-40-vy)*t*1.4;const s=2+t*38;x.save();x.shadowColor='#F28A1E';x.shadowBlur=20+t*60;x.fillStyle='#FFD9A0';x.fillRect(lx-s,ly-s*.18,s*2,s*.36);x.restore();
+  const rx=vx+(w*1.0-vx)*t*1.5, ry=vy+(-40-vy)*t*1.4;x.save();x.shadowColor='#F28A1E';x.shadowBlur=20+t*60;x.fillStyle='#FFD9A0';x.fillRect(rx-s,ry-s*.18,s*2,s*.36);x.restore();}
+ // light trails on road
+ x.globalCompositeOperation='lighter';for(let k=0;k<7;k++){x.beginPath();x.moveTo(vx+(k-3)*3,vy+6);x.quadraticCurveTo(vx+(k-3)*40,h*.75,w*.5+(k-3)*120,h+20);x.strokeStyle=k%3===0?'rgba(255,230,200,.55)':'rgba(213,39,39,.75)';x.lineWidth=2+k*.6;x.shadowColor=k%3===0?'#fff':RED;x.shadowBlur=18;x.stroke();}
+ x.globalCompositeOperation='source-over';x.shadowBlur=0;vignette(x,w,h,.8);grain(x,w,h,26,11);})();
+
+// A2 taillight trails curve
+(function(){const [x,w,h]=c('a2');x.fillStyle='#050606';x.fillRect(0,0,w,h);
+ const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#0b1213');g.addColorStop(.6,'#070909');g.addColorStop(1,'#020303');x.fillStyle=g;x.fillRect(0,0,w,h);
+ x.globalCompositeOperation='lighter';const r=rng(5);
+ for(let k=0;k<22;k++){const off=(k-11)*9+r()*6;x.beginPath();x.moveTo(-50,h*.72+off);x.bezierCurveTo(w*.3,h*.7+off*.8,w*.55,h*.35+off*.5,w+60,h*.28+off*.35);const red=k>6;x.strokeStyle=red?`rgba(213,39,39,${.25+r()*.5})`:`rgba(255,${190+r()*50|0},${140+r()*60|0},${.3+r()*.4})`;x.lineWidth=1+r()*3.5;x.shadowColor=red?RED:'#F28A1E';x.shadowBlur=14;x.stroke();}
+ x.globalCompositeOperation='source-over';x.shadowBlur=0;
+ // guard rail posts
+ x.fillStyle='rgba(111,143,138,.22)';for(let i=0;i<18;i++){const px=i*52-20,py=h*.8-i*14;x.fillRect(px,py,4,40);}
+ vignette(x,w,h,.75);grain(x,w,h,30,7);})();
+
+// A3 garage fluorescent
+(function(){const [x,w,h]=c('a3');const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#101818');g.addColorStop(.55,'#2E403F');g.addColorStop(.62,'#121a1a');g.addColorStop(1,'#050606');x.fillStyle=g;x.fillRect(0,0,w,h);
+ // wall streaks
+ const r=rng(3);for(let i=0;i<220;i++){const sx=r()*w,sy=h*.2+r()*h*.4;x.fillStyle=`rgba(${r()<.5?'10,14,14':'140,170,165'},${r()*.12})`;x.fillRect(sx,sy,1+r()*3,20+r()*140);}
+ // ceiling beam
+ x.fillStyle='#070a0a';x.beginPath();x.moveTo(0,0);x.lineTo(w,0);x.lineTo(w,h*.1);x.lineTo(0,h*.2);x.fill();
+ // tube
+ x.save();x.translate(w*.3,h*.2);x.rotate(-.35);x.shadowColor='#dff';x.shadowBlur=60;x.fillStyle='#f4ffff';x.fillRect(-90,-9,180,18);x.restore();
+ const lg=x.createRadialGradient(w*.3,h*.2,10,w*.3,h*.2,w*.8);lg.addColorStop(0,'rgba(200,240,235,.35)');lg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=lg;x.fillRect(0,0,w,h);
+ // floor line
+ x.strokeStyle='rgba(220,200,120,.55)';x.lineWidth=5;x.beginPath();x.moveTo(w*.45,h*.72);x.lineTo(w*.95,h*.8);x.stroke();
+ // taillight glow left
+ x.globalCompositeOperation='lighter';[[w*.12,h*.62],[w*.3,h*.62]].forEach(([cx,cy])=>{x.beginPath();x.arc(cx,cy,48,0,Math.PI*2);x.strokeStyle=RED;x.lineWidth=10;x.shadowColor=RED;x.shadowBlur=40;x.stroke();});x.globalCompositeOperation='source-over';x.shadowBlur=0;
+ vignette(x,w,h,.7);grain(x,w,h,28,9);})();
+
+// F1 CCTV
+(function(){const [x,w,h]=c('f1');const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#1a2322');g.addColorStop(1,'#060808');x.fillStyle=g;x.fillRect(0,0,w,h);
+ // street perspective
+ x.strokeStyle='rgba(143,168,163,.15)';x.lineWidth=3;for(let i=-4;i<=4;i++){x.beginPath();x.moveTo(w/2,h*.38);x.lineTo(w/2+i*260,h);x.stroke();}
+ // lamp
+ const lg=x.createRadialGradient(w*.78,h*.18,4,w*.78,h*.18,260);lg.addColorStop(0,'rgba(230,240,230,.8)');lg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=lg;x.fillRect(0,0,w,h);
+ // hooded figure silhouette
+ x.fillStyle='#020303';x.beginPath();x.ellipse(w*.42,h*.5,48,58,0,0,Math.PI*2);x.fill();x.beginPath();x.moveTo(w*.42-60,h*.54);x.quadraticCurveTo(w*.42-120,h*.66,w*.42-130,h*.95);x.lineTo(w*.42+130,h*.95);x.quadraticCurveTo(w*.42+120,h*.66,w*.42+60,h*.54);x.fill();
+ // taillights blur behind
+ x.globalCompositeOperation='lighter';[[w*.8,h*.62],[w*.93,h*.62]].forEach(([cx,cy])=>{const rg=x.createRadialGradient(cx,cy,2,cx,cy,50);rg.addColorStop(0,'rgba(255,80,80,.9)');rg.addColorStop(1,'rgba(213,39,39,0)');x.fillStyle=rg;x.fillRect(cx-60,cy-60,120,120);});x.globalCompositeOperation='source-over';
+ // desaturate to green monitor
+ const id=x.getImageData(0,0,w,h),d=id.data;for(let i=0;i<d.length;i+=4){const l=d[i]*.3+d[i+1]*.59+d[i+2]*.11;const redish=d[i]>d[i+1]*1.6&&d[i]>90;if(!redish){d[i]=l*.85;d[i+1]=l*1.02;d[i+2]=l*.95;}}x.putImageData(id,0,0);
+ // scanlines
+ x.fillStyle='rgba(0,0,0,.28)';for(let y=0;y<h;y+=4)x.fillRect(0,y,w,2);
+ grain(x,w,h,44,21);vignette(x,w,h,.6);
+ // HUD
+ x.fillStyle='#E8E6E0';x.font='500 30px "BIZ UDPMincho", monospace';x.fillText('CAM 03',40,64);x.fillText('2025-03-21  23:59:59',40,h-44);x.textAlign='right';x.fillText('FRAME 0140',w-40,h-44);x.fillStyle=RED;x.beginPath();x.arc(w-150,54,11,0,Math.PI*2);x.fill();x.fillText('REC',w-40,64);x.textAlign='left';
+ x.strokeStyle='rgba(232,230,224,.6)';x.lineWidth=2;const m=24,L=40;[[m,m,1,1],[w-m,m,-1,1],[m,h-m,1,-1],[w-m,h-m,-1,-1]].forEach(([a,b,sx,sy])=>{x.beginPath();x.moveTo(a,b+sy*L);x.lineTo(a,b);x.lineTo(a+sx*L,b);x.stroke();});})();
+
+// F2 rain + bokeh
+(function(){const [x,w,h]=c('f2');x.fillStyle='#060808';x.fillRect(0,0,w,h);const r=rng(42);
+ x.globalCompositeOperation='lighter';for(let i=0;i<46;i++){const cx=r()*w,cy=h*.25+r()*h*.55,rad=20+r()*70;const col=r()<.35?'213,39,39':(r()<.5?'111,143,138':'242,138,30');const rg=x.createRadialGradient(cx,cy,rad*.2,cx,cy,rad);rg.addColorStop(0,`rgba(${col},${.18+r()*.25})`);rg.addColorStop(1,`rgba(${col},0)`);x.fillStyle=rg;x.fillRect(cx-rad,cy-rad,rad*2,rad*2);}
+ x.globalCompositeOperation='source-over';
+ x.strokeStyle='rgba(220,230,228,.22)';for(let i=0;i<700;i++){const sx=r()*w,sy=r()*h,l=20+r()*60;x.lineWidth=r()<.1?2:1;x.beginPath();x.moveTo(sx,sy);x.lineTo(sx-l*.18,sy+l);x.stroke();}
+ // wet ground reflection
+ const rg=x.createLinearGradient(0,h*.78,0,h);rg.addColorStop(0,'rgba(213,39,39,.0)');rg.addColorStop(.3,'rgba(213,39,39,.18)');rg.addColorStop(1,'rgba(0,0,0,.6)');x.fillStyle=rg;x.fillRect(0,h*.78,w,h*.22);
+ vignette(x,w,h,.7);grain(x,w,h,34,4);})();
+
+// F3 flash grain
+(function(){const [x,w,h]=c('f3');x.fillStyle='#040505';x.fillRect(0,0,w,h);
+ const fg=x.createRadialGradient(w*.46,h*.44,10,w*.46,h*.44,w*.62);fg.addColorStop(0,'#E8E6E0');fg.addColorStop(.28,'#9a9a95');fg.addColorStop(.62,'#1c1f1f');fg.addColorStop(1,'#040505');x.fillStyle=fg;x.fillRect(0,0,w,h);
+ // silhouette: car rear quarter shape (abstract)
+ x.fillStyle='#050606';x.beginPath();x.moveTo(-10,h*.58);x.bezierCurveTo(w*.2,h*.5,w*.55,h*.48,w*.8,h*.55);x.lineTo(w*.95,h*.62);x.lineTo(w*.97,h*.86);x.lineTo(-10,h*.9);x.closePath();x.fill();
+ // spoiler
+ x.fillRect(w*.08,h*.47,w*.62,16);x.fillRect(w*.18,h*.47,16,h*.06);x.fillRect(w*.6,h*.47,16,h*.06);
+ // taillights halation
+ x.globalCompositeOperation='lighter';[[w*.62,h*.64],[w*.78,h*.64]].forEach(([cx,cy])=>{x.beginPath();x.arc(cx,cy,34,0,Math.PI*2);x.strokeStyle=RED;x.lineWidth=9;x.shadowColor=RED;x.shadowBlur=36;x.stroke();});x.globalCompositeOperation='source-over';x.shadowBlur=0;
+ // channel shift
+ const id=x.getImageData(0,0,w,h),d=id.data,cp=new Uint8ClampedArray(d);for(let y=0;y<h;y++)for(let X=0;X<w;X++){const i=(y*w+X)*4,j=(y*w+Math.min(w-1,X+5))*4;d[i]=cp[j];}x.putImageData(id,0,0);
+ grain(x,w,h,70,99);vignette(x,w,h,.55);})();
+
+// D1 decal sheet
+(function(){const s=document.getElementById('d1');const W='#EDE9E1',K='#0A0B0C';
+ s.innerHTML=`<rect width="400" height="500" fill="#1a1d1e"/>
+ <rect x="16" y="16" width="368" height="468" fill="#0f1112" stroke="#2a2f30"/>
+ <g transform="translate(32 34)"><rect width="336" height="64" fill="${RED}"/><image href="logo/VANDALISM_logo_feher.svg" x="14" y="8" width="230" height="48"/><text x="322" y="28" text-anchor="end" font-family="Archivo" font-stretch="75%" font-weight="700" font-size="13" fill="${W}" letter-spacing="1">RACING</text><text x="322" y="46" text-anchor="end" font-family="Archivo" font-stretch="75%" font-weight="700" font-size="13" fill="${W}" letter-spacing="1">DEVELOPMENT</text></g>
+ <g transform="translate(32 114)"><rect width="160" height="58" fill="${W}"/><text x="80" y="27" text-anchor="middle" font-family="Archivo" font-stretch="62%" font-weight="800" font-size="26" fill="${K}">FXRX</text><text x="80" y="46" text-anchor="middle" font-family="Archivo" font-size="9" letter-spacing="2" fill="${K}">SOUND SYSTEM · 140</text></g>
+ <g transform="translate(208 114)"><rect width="160" height="58" fill="${K}" stroke="${W}" stroke-width="2"/><text x="80" y="36" text-anchor="middle" font-family="Archivo" font-stretch="62%" font-weight="800" font-size="26" fill="${W}">ILLROCK</text><rect x="0" y="46" width="160" height="12" fill="${RED}"/></g>
+ <g transform="translate(32 188)"><polygon points="44,0 88,78 0,78" fill="#F2C230" stroke="${K}" stroke-width="3"/><text x="44" y="64" text-anchor="middle" font-family="Noto Sans JP" font-weight="500" font-size="22" fill="${K}">注意</text></g>
+ <g transform="translate(138 188)"><rect width="230" height="36" fill="${W}"/><text x="12" y="24" font-family="Archivo" font-stretch="75%" font-weight="700" font-size="15" fill="${K}" letter-spacing="1">BUDAPEST ⟶ TOKYO</text><rect y="44" width="230" height="36" fill="${RED}"/><text x="12" y="68" font-family="Archivo" font-stretch="75%" font-weight="700" font-size="15" fill="${W}" letter-spacing="1">140 BPM · BASS · UKG</text></g>
+ <g transform="translate(32 290)"><circle cx="46" cy="46" r="46" fill="${W}"/><image href="logo/V-monogram_feher.svg" x="12" y="24" width="68" height="46" style="filter:invert(1)"/></g>
+ <g transform="translate(138 290)"><rect width="110" height="92" fill="${K}" stroke="#9DA3A6" stroke-width="2"/><text x="55" y="70" text-anchor="middle" font-family="Helvetica Neue,Arial" font-size="68" fill="${W}">21</text></g>
+ <g transform="translate(262 290)"><rect width="106" height="92" fill="#9DA3A6"/>${Array.from({length:22},(_,i)=>`<rect x="${8+i*4.2}" y="10" width="${i%3?1.6:3}" height="56" fill="${K}"/>`).join('')}<text x="53" y="84" text-anchor="middle" font-family="BIZ UDPMincho" font-size="11" fill="${K}">VND-2025-0321</text></g>
+ <g transform="translate(32 400)"><rect width="336" height="64" fill="${W}"/><text x="14" y="42" font-family="Noto Sans JP" font-weight="500" font-size="30" fill="${K}">バンダリズム</text><text x="322" y="28" text-anchor="end" font-family="Archivo" font-size="10" letter-spacing="2" fill="${K}">SPEED SHOP</text><text x="322" y="46" text-anchor="end" font-family="Archivo" font-size="10" letter-spacing="2" fill="${RED}">SINCE 2024</text></g>`;})();
+
+// D2 BPM tach
+(function(){const s=document.getElementById('d2');const cx=200,cy=250,R=150,a0=135,a1=405,min=0,max=200;const ang=v=>(a0+(v-min)/(max-min)*(a1-a0))*Math.PI/180;const P=(v,r)=>[cx+Math.cos(ang(v))*r,cy+Math.sin(ang(v))*r];
+ let t='';for(let v=0;v<=200;v+=5){const big=v%20===0;const [x1,y1]=P(v,R-(big?26:14)),[x2,y2]=P(v,R-4);t+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${v>=140?RED:'#EDE9E1'}" stroke-width="${big?4:2}"/>`;if(big){const [lx,ly]=P(v,R-48);t+=`<text x="${lx}" y="${ly+7}" text-anchor="middle" font-family="Archivo" font-stretch="75%" font-weight="700" font-size="20" fill="${v>=140?RED:'#EDE9E1'}">${v}</text>`;}}
+ const arc=(v1,v2,r)=>{const [x1,y1]=P(v1,r),[x2,y2]=P(v2,r);const large=((v2-v1)/(max-min)*(a1-a0))>180?1:0;return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;};
+ const [nx,ny]=P(140,R-30);
+ s.innerHTML=`<rect width="400" height="500" fill="#070808"/><circle cx="${cx}" cy="${cy}" r="${R+16}" fill="#0f1213" stroke="#2a3031" stroke-width="3"/>
+ <path d="${arc(140,200,R-8)}" stroke="${RED}" stroke-width="14" fill="none" opacity=".9"/>${t}
+ <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${RED}" stroke-width="5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="16" fill="#1b1f20" stroke="#EDE9E1" stroke-width="2"/>
+ <text x="${cx}" y="${cy+62}" text-anchor="middle" font-family="Archivo" font-size="12" letter-spacing="3" fill="#8C9593">×1 BPM</text>
+ <text x="${cx}" y="${cy+96}" text-anchor="middle" font-family="Helvetica Neue,Arial" font-size="40" fill="${RED}">140</text>
+ <text x="200" y="468" text-anchor="middle" font-family="Noto Sans JP" font-weight="300" font-size="16" letter-spacing="4" fill="#EDE9E1">バンダリズム</text>`;})();
+
+// D3 windshield banner + number plate
+(function(){const s=document.getElementById('d3');
+ s.innerHTML=`<defs><linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2a2b"/><stop offset="1" stop-color="#050606"/></linearGradient></defs>
+ <rect width="400" height="500" fill="#050606"/>
+ <path d="M30 150 Q200 110 370 150 L350 330 Q200 300 50 330 Z" fill="url(#gl)" stroke="#2a3031" stroke-width="6"/>
+ <path d="M30 150 Q200 110 370 150 L366 186 Q200 150 34 186 Z" fill="#0A0B0C"/>
+ <image href="logo/VANDALISM_logo_feher.svg" x="120" y="138" width="160" height="42"/>
+ <path d="M40 240 Q120 220 200 250" stroke="rgba(237,233,225,.12)" stroke-width="18" fill="none"/>
+ <g transform="translate(70 360)"><rect width="260" height="110" rx="6" fill="#EDE9E1"/><rect x="8" y="8" width="244" height="94" rx="3" fill="none" stroke="#0A0B0C" stroke-width="2"/>
+ <text x="22" y="36" font-family="Noto Sans JP" font-weight="500" font-size="16" fill="#0A0B0C">ブダペスト 140</text>
+ <text x="130" y="92" text-anchor="middle" font-family="Helvetica Neue,Arial" font-size="58" fill="#0A0B0C" letter-spacing="2">21-03</text></g>`;})();
+})();
+</script>
+<script>
+(function(){
+const BRAND='#D52727';
+const tool=document.querySelector('.pal-tool'), imgEl=document.getElementById('palimg');
+const toLin=c=>{c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4)};
+const fromLin=c=>{const v=c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;return v*255};
+function rgb2oklab(r,g,b){r=toLin(r);g=toLin(g);b=toLin(b);
+ const l=Math.cbrt(0.4122214708*r+0.5363325363*g+0.0514459929*b),m=Math.cbrt(0.2119034982*r+0.6806995451*g+0.1073969566*b),s=Math.cbrt(0.0883024619*r+0.2817188376*g+0.6299787005*b);
+ return [0.2104542553*l+0.7936177850*m-0.0040720468*s,1.9779984951*l-2.4285922050*m+0.4505937099*s,0.0259040371*l+0.7827717662*m-0.8086757660*s];}
+function oklab2lin(L,a,b){const l=Math.pow(L+0.3963377774*a+0.2158037573*b,3),m=Math.pow(L-0.1055613458*a-0.0638541728*b,3),s=Math.pow(L-0.0894841775*a-1.2914855480*b,3);
+ return [4.0767416621*l-3.3077115913*m+0.2309699292*s,-1.2684380046*l+2.6097574011*m-0.3413193965*s,-0.0041960863*l-0.7034186147*m+1.7076147010*s];}
+function lchRgb(L,C,h){for(let i=0;i<50;i++){const v=oklab2lin(L,C*Math.cos(h),C*Math.sin(h));if(v.every(x=>x>=-0.0005&&x<=1.0005))return v.map(x=>Math.round(fromLin(Math.min(1,Math.max(0,x)))));C*=0.93;}
+ return oklab2lin(L,0,0).map(x=>Math.round(fromLin(Math.min(1,Math.max(0,x)))));}
+const hex=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
+const h2r=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const lum=c=>{const [r,g,b]=c.map(toLin);return 0.2126*r+0.7152*g+0.0722*b};
+const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05)};
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;}}
+
+function pixels(src,sw,sh){const W=160,H=Math.max(1,Math.round(W*sh/sw));const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(src,0,0,W,H);
+ const d=x.getImageData(0,0,W,H).data,P=[];for(let i=0;i<d.length;i+=4){if(d[i+3]<128)continue;P.push(rgb2oklab(d[i],d[i+1],d[i+2]));}return P;}
+function kmeans(P,k){const r=rng(7);const C=[P[Math.floor(r()*P.length)].slice()];
+ while(C.length<k){const D=P.map(p=>Math.min(...C.map(c=>(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2)));const tot=D.reduce((a,b)=>a+b,0)||1;let t=r()*tot,i=0;while(i<P.length-1&&t>D[i]){t-=D[i];i++;}C.push(P[i].slice());}
+ const A=new Int32Array(P.length);
+ for(let it=0;it<14;it++){const S=C.map(()=>[0,0,0,0]);for(let i=0;i<P.length;i++){const p=P[i];let bi=0,bd=1e9;for(let j=0;j<k;j++){const c=C[j],dd=(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2;if(dd<bd){bd=dd;bi=j}}A[i]=bi;const s=S[bi];s[0]+=p[0];s[1]+=p[1];s[2]+=p[2];s[3]++;}
+  for(let j=0;j<k;j++)if(S[j][3])C[j]=[S[j][0]/S[j][3],S[j][1]/S[j][3],S[j][2]/S[j][3]];}
+ const n=new Array(k).fill(0);for(let i=0;i<P.length;i++)n[A[i]]++;
+ return C.map((c,j)=>({L:c[0],C:Math.hypot(c[1],c[2]),h:Math.atan2(c[2],c[1]),w:n[j]/P.length})).filter(c=>c.w>0.003);}
+// hue peaks of the light sources (vivid, not dark pixels)
+function lightPeaks(P){const B=36,hist=new Float64Array(B),cs=Array.from({length:B},()=>[]);let vivid=0;
+ for(const p of P){const C=Math.hypot(p[1],p[2]);if(C<0.06||p[0]<0.3)continue;const h=(Math.atan2(p[2],p[1])+2*Math.PI)%(2*Math.PI);const bi=Math.floor(h/(2*Math.PI)*B)%B;hist[bi]+=C*p[0];cs[bi].push(C);vivid++;}
+ const sm=Array.from(hist,(v,i)=>v+0.5*hist[(i+1)%B]+0.5*hist[(i+B-1)%B]);
+ const peaks=[];for(let i=0;i<B;i++){if(sm[i]>0&&sm[i]>=sm[(i+1)%B]&&sm[i]>=sm[(i+B-1)%B])peaks.push({i,v:sm[i]});}
+ peaks.sort((a,b)=>b.v-a.v);
+ const toPeak=pk=>{const all=[pk.i-1,pk.i,pk.i+1].map(j=>(j+B)%B);let sx=0,sy=0;const chs=[];all.forEach(j=>{const a=(j+.5)/B*2*Math.PI;sx+=Math.cos(a)*hist[j];sy+=Math.sin(a)*hist[j];chs.push(...cs[j]);});chs.sort((a,b)=>a-b);return {h:Math.atan2(sy,sx),C:chs.length?chs[Math.floor(chs.length*.9)]:0.15,v:pk.v};};
+ return {share:vivid/P.length,peaks:peaks.map(toPeak)};}
+const hueDist=(a,b)=>{let d=Math.abs(a-b)%(2*Math.PI);return d>Math.PI?2*Math.PI-d:d;};
+
+let last=null;
+function analyse(src,sw,sh){
+ const P=pixels(src,sw,sh);const cl=kmeans(P,7);const lp=lightPeaks(P);
+ const darks=cl.filter(c=>c.L<0.35).sort((a,b)=>b.w-a.w);const bgC=darks[0]||[...cl].sort((a,b)=>a.L-b.L)[0];
+ const bg=lchRgb(Math.min(bgC.L,0.16),Math.min(bgC.C,0.035),bgC.h);
+ const mids=cl.filter(c=>c!==bgC&&c.L>=bgC.L+0.08&&c.L<=0.65&&c.C<0.09).sort((a,b)=>b.w-a.w);const mC=mids[0]||{L:bgC.L+0.18,C:bgC.C,h:bgC.h};
+ const mid=lchRgb(Math.min(Math.max(mC.L,0.3),0.5),Math.min(mC.C,0.06),mC.h);
+ let acc=null,acc2=null,accNote='';
+ if(lp.share>0.004&&lp.peaks.length){const p=lp.peaks[0];let L=0.6;const C=Math.min(Math.max(p.C,0.17),0.24);acc=lchRgb(L,C,p.h);while(ratio(acc,bg)<3&&L<0.9){L+=0.02;acc=lchRgb(L,C,p.h);}
+  const q=lp.peaks.find(x=>x!==p&&hueDist(x.h,p.h)>=40*Math.PI/180&&x.v>=p.v*0.06);if(q)acc2=lchRgb(0.74,Math.min(Math.max(q.C,0.12),0.2),q.h);}
+ else accNote='A kép szinte szürke, ezért a Jelpiros lép be.';
+ let pL=0.94;let paper=lchRgb(pL,0.012,bgC.h);while(ratio(paper,bg)<7&&pL<0.99){pL+=0.01;paper=lchRgb(pL,0.012,bgC.h);}
+ last={bg,mid,accImg:acc,acc2,paper,accNote,cl};render();}
+
+function render(){if(!last)return;const mode=document.querySelector('input[name=accmode]:checked').value;
+ const acc=(mode==='brand'||!last.accImg)?h2r(BRAND):last.accImg;
+ const R=[
+  ['--v-bg','Háttér','A kép legsötétebb nagy felülete. Az átmenet ebbe fut ki.',last.bg,null],
+  ['--v-mid','Közép','Leggyakoribb középtónus. Keretek, vékony vonalak.',last.mid,null],
+  ['--v-accent','Kiemelő','Logó, dátumkör, line-up, katakana.',acc,3],
+  ['--v-accent-2','Második fény',last.acc2?'Csak kis felületen, például a 140 BPM jelölésben.':'Nincs elég eltérő második fényforrás a képen.',last.acc2,null],
+  ['--v-paper','Papír','Infóblokk és V✦ jel.',last.paper,7]];
+ tool.style.setProperty('--p-bg',hex(last.bg));tool.style.setProperty('--p-mid',hex(last.mid));tool.style.setProperty('--p-acc',hex(acc));tool.style.setProperty('--p-paper',hex(last.paper));if(last.acc2)tool.style.setProperty('--p-acc2',hex(last.acc2));
+ document.getElementById('palroles').innerHTML=R.map(([t,n,d,c,min])=>{if(!c)return `<div class="role"><i style="background:repeating-linear-gradient(45deg,#1a1d1e 0 6px,#111415 6px 12px)"></i><div><b>${n}</b><small>${d}</small></div><code>–</code></div>`;
+  const cr=t==='--v-bg'?'':`${ratio(c,last.bg).toFixed(1)}:1 a háttéren`;const cls=min?(ratio(c,last.bg)>=min?'ok':'low'):'';
+  return `<div class="role"><i style="background:${hex(c)}"></i><div><b>${n}</b><small>${d}${t==='--v-accent'&&last.accNote&&mode==='img'?' '+last.accNote:''}</small></div><code>${hex(c)}<br><span class="${cls}">${cr}</span></code></div>`;}).join('');
+ const cl=[...last.cl].sort((a,b)=>a.L-b.L);
+ document.getElementById('palstrip').innerHTML=cl.map(c=>{const rgb=lchRgb(c.L,c.C,c.h);return `<span title="${hex(rgb)} · ${(c.w*100).toFixed(0)}%" style="background:${hex(rgb)};flex:${c.w}"></span>`;}).join('');
+ const pad=s=>s.padEnd(15);
+ document.getElementById('paltokens').textContent=['/* VANDALISM · paletta a háttérképből */',...R.filter(r=>r[3]).map(([t,n,,c])=>`${pad(t+':')}${hex(c)};  /* ${n.toLowerCase()} */`)].join('\n');}
+
+function fromImage(url){const im=new Image();im.onload=()=>{imgEl.src=url;analyse(im,im.naturalWidth,im.naturalHeight);};im.src=url;}
+function fromCanvas(id){const c=document.getElementById(id);imgEl.src=c.toDataURL('image/jpeg',.85);analyse(c,c.width,c.height);}
+function setOn(btn){document.querySelectorAll('.srcbtn').forEach(b=>b.classList.toggle('is-on',b===btn));}
+document.querySelectorAll('.srcbtn[data-src],.srcbtn[data-canvas]').forEach(b=>b.addEventListener('click',()=>{setOn(b);b.dataset.src?fromImage(b.dataset.src):fromCanvas(b.dataset.canvas);}));
+function readFile(f){if(!f||!f.type.startsWith('image/'))return;const fr=new FileReader();fr.onload=()=>{setOn(document.querySelector('.upl'));fromImage(fr.result);};fr.readAsDataURL(f);}
+document.getElementById('palfile').addEventListener('change',e=>readFile(e.target.files[0]));
+const drop=document.getElementById('paldrop');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>readFile(e.dataTransfer.files[0]));
+document.querySelectorAll('input[name=accmode]').forEach(r=>r.addEventListener('change',render));
+document.getElementById('palcopy').addEventListener('click',()=>{const t=document.getElementById('paltokens').textContent,msg=document.getElementById('palcopied');
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('paltokens'));const s=getSelection();s.removeAllRanges();s.addRange(r);msg.textContent='Kijelöltem, másold ki Ctrl+C-vel.';};
+ try{navigator.clipboard.writeText(t).then(()=>{msg.textContent='Kimásolva.';},sel);}catch(e){sel();}});
+fromImage('img/roots_16x9.webp');
+})();
+</script>
+
+</body></html>

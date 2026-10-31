@@ -1,0 +1,371 @@
+<title>Vandalism Flyer Generátor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=BIZ+UDPMincho&family=Inter+Tight:wght@400;500&family=Noto+Sans+JP:wght@300;500&display=swap">
+<style>
+/* Layout: control rail on the left, the three live canvases on the right (16:9 across, 4:5 + 9:16 below). Single dark look, like the moodboard. */
+:root{
+  color-scheme:dark;
+  --ink:#0A0B0C; --panel:#111415; --line:#232A2B; --line-hi:#3A4544; --muted:#8C9593; --paper:#EDE9E1; --red:#D52727; --ok:#8FC9A0; --warn:#F2C230;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --serif:"BIZ UDPMincho","Yu Mincho","MS Mincho","Times New Roman",serif;
+  --jp:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--ink);color:var(--paper);font-family:var(--serif);font-size:15px;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1380px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end;justify-content:space-between;padding-block:36px 24px;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;gap:10px;min-width:0}
+.brand img{width:min(360px,100%);display:block}
+h1{font-family:var(--display);font-stretch:72%;font-weight:750;text-transform:uppercase;font-size:clamp(30px,5vw,52px);line-height:.95;margin:0;text-wrap:balance}
+.jpv{font-family:var(--jp);font-weight:300;color:var(--red);font-size:18px;letter-spacing:.12em}
+.lede{max-width:60ch;color:var(--muted);margin:0;font-size:14px}
+.app{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:36px;padding-top:28px;align-items:start}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr)}}
+.rail{display:grid;gap:22px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+@media (max-width:900px){.rail{position:static}}
+.field{display:grid;gap:7px;min-width:0}
+.k,label.k{font-family:var(--display);font-stretch:85%;font-weight:650;text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--muted)}
+.k b{color:var(--red);font-weight:650}
+input[type=text],input[type=date],textarea,select{width:100%;background:var(--panel);color:var(--paper);border:1px solid var(--line);border-radius:0;padding:9px 11px;font:15px/1.4 var(--serif)}
+textarea{resize:vertical;min-height:96px;font-family:"Inter Tight",Arial,sans-serif;font-weight:500;text-transform:uppercase;letter-spacing:-.01em;font-size:17px;line-height:1.35}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px;border-color:var(--red)}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.drop{border:1px dashed var(--line-hi);padding:12px;display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center;transition:border-color .2s,background .2s}
+.drop.over{border-color:var(--red);background:var(--panel)}
+.drop .thumb{width:72px;aspect-ratio:1;object-fit:cover;display:block;background:var(--panel)}
+.drop .meta{display:grid;gap:6px;min-width:0}
+.drop .name{font-size:13px;overflow-wrap:anywhere}
+.btn{font-family:var(--display);font-stretch:85%;font-weight:650;text-transform:uppercase;letter-spacing:.1em;font-size:12px;background:transparent;color:var(--paper);border:1px solid var(--line-hi);padding:8px 12px;cursor:pointer;justify-self:start;display:inline-block}
+.btn:hover{border-color:var(--muted)}
+.btn:focus-visible,.btn:has(+ input:focus-visible){outline:2px solid var(--red);outline-offset:2px}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn.primary:hover{background:#B81F1F}
+.radios{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
+input[type=radio],input[type=checkbox],input[type=range]{accent-color:var(--red)}
+.sl{display:grid;grid-template-columns:92px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:13px}
+.sl output{font-variant-numeric:tabular-nums;text-align:right;color:var(--muted);font-size:12px}
+.pal{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.pal div{border:1px solid var(--line)}
+.pal i{display:block;height:30px}
+.pal span{display:block;padding:4px 6px;font-size:10px;line-height:1.3;font-variant-numeric:tabular-nums}
+.pal span b{display:block;font-family:var(--display);font-stretch:85%;text-transform:uppercase;letter-spacing:.06em;font-weight:650}
+.pal .ok{color:var(--ok)}.pal .low{color:var(--warn)}
+.export{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:20px}
+.export .line{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.export select{width:auto}
+#status{font-size:12px;color:var(--muted);min-height:1.2em;margin:0}
+.stage{display:grid;gap:22px;min-width:0}
+.pair{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,.5625fr);gap:22px;align-items:start}
+@media (max-width:520px){.pair{grid-template-columns:minmax(0,1fr)}}
+figure{margin:0;min-width:0}
+figure canvas{display:block;width:100%;height:auto;max-width:100%;background:#000;cursor:grab;touch-action:none}
+figure canvas:active{cursor:grabbing}
+figure canvas:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+figcaption{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px}
+figcaption .t{font-size:12px;color:var(--muted);min-width:0}
+figcaption .t b{font-family:var(--display);font-stretch:85%;font-weight:650;text-transform:uppercase;letter-spacing:.08em;color:var(--paper);margin-right:6px;font-size:13px}
+.note{font-size:12px;color:var(--muted);margin:28px 0 0;max-width:80ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="brand">
+    <img src="__WORDMARK_RED__" alt="VANDALISM">
+    <h1>Flyer generátor</h1>
+  </div>
+  <div style="display:grid;gap:6px;justify-items:end;min-width:0">
+    <div class="jpv" aria-hidden="true">バンダリズム · フライヤー</div>
+    <p class="lede">Tölts fel egy háttérképet, add meg a dátumot és a fellépőket. A három formátum azonnal elkészül a moodboard alapváza szerint, a színek a képből jönnek.</p>
+  </div>
+</header>
+
+<div class="app">
+<form class="rail" id="form" autocomplete="off">
+  <div class="field">
+    <span class="k">Háttérkép</span>
+    <div class="drop" id="drop">
+      <img class="thumb" id="thumb" alt="">
+      <div class="meta">
+        <span class="name" id="bgname">Minta: alagút (moodboard A vázlat)</span>
+        <label class="btn" for="f-file">Kép kiválasztása…</label>
+        <input type="file" id="f-file" accept="image/*" hidden>
+      </div>
+    </div>
+    <p class="hint">Húzd ide a képet, vagy illeszd be (Ctrl+V). A kép csak a böngésződben marad.</p>
+  </div>
+
+  <div class="row2">
+    <div class="field"><label class="k" for="f-date">Dátum <b>*</b></label><input type="date" id="f-date" value="2025-03-21"></div>
+    <div class="field"><label class="k" for="f-city">Város</label><input type="text" id="f-city" value="Budapest"></div>
+  </div>
+
+  <div class="field">
+    <label class="k" for="f-lineup">Fellépők <b>*</b></label>
+    <textarea id="f-lineup" rows="4" spellcheck="false">FXRX
+ILLROCK</textarea>
+    <p class="hint">Soronként egy név. Hosszabb listánál a betűméret magától csökken.</p>
+  </div>
+
+  <div class="field">
+    <label class="k" for="f-venue">Helyszín / buli neve</label>
+    <input type="text" id="f-venue" value="ROOTS" placeholder="pl. ROOTS">
+    <p class="hint">Az infóblokk első sorába kerül: VANDALISM @ …</p>
+  </div>
+
+  <div class="field">
+    <span class="k">Kiemelő szín</span>
+    <div class="radios" role="radiogroup" aria-label="Kiemelő szín">
+      <label><input type="radio" name="acc" id="acc-img" value="img" checked> A képből</label>
+      <label><input type="radio" name="acc" id="acc-brand" value="brand"> Jelpiros (#D52727)</label>
+    </div>
+    <div class="pal" id="pal" aria-live="polite"></div>
+  </div>
+
+  <div class="field">
+    <span class="k">Kép</span>
+    <label class="sl" for="f-zoom">Nagyítás<input type="range" id="f-zoom" min="100" max="220" value="100"><output id="o-zoom">100%</output></label>
+    <label class="sl" for="f-shade">Sötétítés<input type="range" id="f-shade" min="0" max="100" value="60"><output id="o-shade">60</output></label>
+    <label class="sl" for="f-grain">Szemcse<input type="range" id="f-grain" min="0" max="100" value="35"><output id="o-grain">35</output></label>
+    <label style="font-size:14px"><input type="checkbox" id="f-flip"> Kép tükrözése (ha a fő motívum a jobb oldalon van)</label>
+    <p class="hint">A képet az előnézeten húzva formátumonként külön is igazíthatod.</p>
+    <button type="button" class="btn" id="reset">Pozíciók visszaállítása</button>
+  </div>
+
+  <div class="export">
+    <div class="line">
+      <label class="k" for="f-fmt">Fájlformátum</label>
+      <select id="f-fmt"><option value="jpg">JPG (kisebb)</option><option value="png">PNG</option></select>
+    </div>
+    <button type="button" class="btn primary" id="dl-all">Mindhárom letöltése (ZIP)</button>
+    <p id="status" aria-live="polite"></p>
+  </div>
+</form>
+
+<div class="stage" id="stage"></div>
+</div>
+
+<p class="note">A dátumkör, a line-up, a katakana és a logó a kép kiemelő színét kapja, az infóblokk papírfehér. Ha a kép szinte szürke, a Jelpiros lép be. A japán feliratokat használat előtt érdemes anyanyelvi szakemberrel ellenőriztetni.</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+const WORDMARK='__WORDMARK__', MONOGRAM='__MONOGRAM__', SAMPLE='__SAMPLE__';
+const BRAND='#D52727', KATAKANA='バンダリズム';
+const GROT='"Inter Tight","Helvetica Neue",Helvetica,Arial,sans-serif';
+const SERIF='"BIZ UDPMincho","Yu Mincho","MS Mincho","Times New Roman",serif';
+const JP='"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif';
+const MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+
+// Layout per format, measured from the ROOTS flyers. L = logo width, R = right edge of the
+// "VANDALISM" lettering, top = logo top (star tip); info = V✦ block in the bottom left.
+const FORMATS=[
+ {id:'16x9',W:1920,H:1080,name:'16:9',use:'Facebook esemény, YouTube, kijelző',L:.39,R:.906,top:.14,maxB:.92,ix:.05,ib:.925,is:.0146,fx:.5,fy:.5},
+ {id:'4x5',W:1080,H:1350,name:'4:5',use:'Instagram poszt',L:.54,R:.912,top:.035,maxB:.86,ix:.277,ib:.955,is:.023,fx:.3,fy:.5},
+ {id:'9x16',W:1080,H:1920,name:'9:16',use:'Story, Reels',L:.66,R:.912,top:.185,maxB:.87,ix:.25,ib:.955,is:.026,fx:.3,fy:.5}];
+FORMATS.forEach(f=>{f.fx0=f.fx;f.fy0=f.fy;});
+const WORD_AR=1426.18/4764.51, MONO_AR=1172/832;
+
+const $=id=>document.getElementById(id);
+const S={img:null,iw:0,ih:0,pal:null,name:'Minta: alagút (moodboard A vázlat)'};
+const imgs={};
+function loadImg(src){return new Promise((ok,err)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=err;im.src=src;});}
+
+/* ---------- palette from the background (same rules as the moodboard) ---------- */
+const toLin=c=>{c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4)};
+const fromLin=c=>{const v=c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;return v*255};
+function rgb2oklab(r,g,b){r=toLin(r);g=toLin(g);b=toLin(b);
+ const l=Math.cbrt(0.4122214708*r+0.5363325363*g+0.0514459929*b),m=Math.cbrt(0.2119034982*r+0.6806995451*g+0.1073969566*b),s=Math.cbrt(0.0883024619*r+0.2817188376*g+0.6299787005*b);
+ return [0.2104542553*l+0.7936177850*m-0.0040720468*s,1.9779984951*l-2.4285922050*m+0.4505937099*s,0.0259040371*l+0.7827717662*m-0.8086757660*s];}
+function oklab2lin(L,a,b){const l=Math.pow(L+0.3963377774*a+0.2158037573*b,3),m=Math.pow(L-0.1055613458*a-0.0638541728*b,3),s=Math.pow(L-0.0894841775*a-1.2914855480*b,3);
+ return [4.0767416621*l-3.3077115913*m+0.2309699292*s,-1.2684380046*l+2.6097574011*m-0.3413193965*s,-0.0041960863*l-0.7034186147*m+1.7076147010*s];}
+function lchRgb(L,C,h){for(let i=0;i<50;i++){const v=oklab2lin(L,C*Math.cos(h),C*Math.sin(h));if(v.every(x=>x>=-0.0005&&x<=1.0005))return v.map(x=>Math.round(fromLin(Math.min(1,Math.max(0,x)))));C*=0.93;}
+ return oklab2lin(L,0,0).map(x=>Math.round(fromLin(Math.min(1,Math.max(0,x)))));}
+const hex=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
+const h2r=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const lum=c=>{const [r,g,b]=c.map(toLin);return 0.2126*r+0.7152*g+0.0722*b};
+const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05)};
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;}}
+function pixels(src,sw,sh){const W=160,H=Math.max(1,Math.round(W*sh/sw));const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(src,0,0,W,H);
+ const d=x.getImageData(0,0,W,H).data,P=[];for(let i=0;i<d.length;i+=4){if(d[i+3]<128)continue;P.push(rgb2oklab(d[i],d[i+1],d[i+2]));}return P;}
+function kmeans(P,k){const r=rng(7);const C=[P[Math.floor(r()*P.length)].slice()];
+ while(C.length<k){const D=P.map(p=>Math.min(...C.map(c=>(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2)));const tot=D.reduce((a,b)=>a+b,0)||1;let t=r()*tot,i=0;while(i<P.length-1&&t>D[i]){t-=D[i];i++;}C.push(P[i].slice());}
+ const A=new Int32Array(P.length);
+ for(let it=0;it<14;it++){const S=C.map(()=>[0,0,0,0]);for(let i=0;i<P.length;i++){const p=P[i];let bi=0,bd=1e9;for(let j=0;j<k;j++){const c=C[j],dd=(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2;if(dd<bd){bd=dd;bi=j}}A[i]=bi;const s=S[bi];s[0]+=p[0];s[1]+=p[1];s[2]+=p[2];s[3]++;}
+  for(let j=0;j<k;j++)if(S[j][3])C[j]=[S[j][0]/S[j][3],S[j][1]/S[j][3],S[j][2]/S[j][3]];}
+ const n=new Array(k).fill(0);for(let i=0;i<P.length;i++)n[A[i]]++;
+ return C.map((c,j)=>({L:c[0],C:Math.hypot(c[1],c[2]),h:Math.atan2(c[2],c[1]),w:n[j]/P.length})).filter(c=>c.w>0.003);}
+// hue peaks of the light sources (vivid, not dark pixels)
+function lightPeaks(P){const B=36,hist=new Float64Array(B),cs=Array.from({length:B},()=>[]);let vivid=0;
+ for(const p of P){const C=Math.hypot(p[1],p[2]);if(C<0.06||p[0]<0.3)continue;const h=(Math.atan2(p[2],p[1])+2*Math.PI)%(2*Math.PI);const bi=Math.floor(h/(2*Math.PI)*B)%B;hist[bi]+=C*p[0];cs[bi].push(C);vivid++;}
+ const sm=Array.from(hist,(v,i)=>v+0.5*hist[(i+1)%B]+0.5*hist[(i+B-1)%B]);
+ const peaks=[];for(let i=0;i<B;i++){if(sm[i]>0&&sm[i]>=sm[(i+1)%B]&&sm[i]>=sm[(i+B-1)%B])peaks.push({i,v:sm[i]});}
+ peaks.sort((a,b)=>b.v-a.v);
+ const toPeak=pk=>{const all=[pk.i-1,pk.i,pk.i+1].map(j=>(j+B)%B);let sx=0,sy=0;const chs=[];all.forEach(j=>{const a=(j+.5)/B*2*Math.PI;sx+=Math.cos(a)*hist[j];sy+=Math.sin(a)*hist[j];chs.push(...cs[j]);});chs.sort((a,b)=>a-b);return {h:Math.atan2(sy,sx),C:chs.length?chs[Math.floor(chs.length*.9)]:0.15,v:pk.v};};
+ return {share:vivid/P.length,peaks:peaks.map(toPeak)};}
+function analyse(src,sw,sh){
+ const P=pixels(src,sw,sh);const cl=kmeans(P,7);const lp=lightPeaks(P);
+ const darks=cl.filter(c=>c.L<0.35).sort((a,b)=>b.w-a.w);const bgC=darks[0]||[...cl].sort((a,b)=>a.L-b.L)[0];
+ const bg=lchRgb(Math.min(bgC.L,0.16),Math.min(bgC.C,0.035),bgC.h);
+ let acc=null;
+ if(lp.share>0.004&&lp.peaks.length){const p=lp.peaks[0];let L=0.6;const C=Math.min(Math.max(p.C,0.17),0.24);acc=lchRgb(L,C,p.h);while(ratio(acc,bg)<3&&L<0.9){L+=0.02;acc=lchRgb(L,C,p.h);}}
+ let pL=0.94;let paper=lchRgb(pL,0.012,bgC.h);while(ratio(paper,bg)<7&&pL<0.99){pL+=0.01;paper=lchRgb(pL,0.012,bgC.h);}
+ return {bg,accImg:acc,paper};}
+function palette(){const p=S.pal||{bg:h2r('#0A0B0C'),accImg:null,paper:h2r('#EDE9E1')};
+ const brand=document.querySelector('input[name=acc]:checked').value==='brand';
+ return {bg:p.bg,paper:p.paper,acc:(brand||!p.accImg)?h2r(BRAND):p.accImg,grey:!p.accImg};}
+function showPalette(){const p=palette();
+ const sw=(n,c,min)=>{const r=ratio(c,p.bg);return `<div><i style="background:${hex(c)}"></i><span><b>${n}</b>${hex(c)}${min?`<br><span class="${r>=min?'ok':'low'}">${r.toFixed(1)}:1</span>`:''}</span></div>`;};
+ $('pal').innerHTML=sw('Háttér',p.bg)+sw('Kiemelő',p.acc,3)+sw('Papír',p.paper,7)+`<div><i style="background:${BRAND}"></i><span><b>Jelpiros</b>${p.grey?'<br>szürke kép':'tartalék'}</span></div>`;}
+
+/* ---------- drawing ---------- */
+let noise=null;
+function grainTile(){if(noise)return noise;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');const id=x.createImageData(256,256),d=id.data,r=rng(11);
+ for(let i=0;i<d.length;i+=4){const v=128+(r()+r()+r()-1.5)*120;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}x.putImageData(id,0,0);return noise=c;}
+function tinted(img,w,h,color){const c=document.createElement('canvas');c.width=Math.max(1,Math.ceil(w));c.height=Math.max(1,Math.ceil(h));const x=c.getContext('2d');
+ x.drawImage(img,0,0,c.width,c.height);x.globalCompositeOperation='source-in';x.fillStyle=color;x.fillRect(0,0,c.width,c.height);return c;}
+function track(x,px){if('letterSpacing' in x)x.letterSpacing=px+'px';}
+function fields(){
+ const d=$('f-date').value, m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+ const names=$('f-lineup').value.split(/\n+/).map(s=>s.trim().toUpperCase()).filter(Boolean);
+ return {y:m?m[1]:'',month:m?MONTHS[+m[2]-1]:'',day:m?String(+m[3]):'',iso:m?d:'',names,
+  venue:$('f-venue').value.trim().toUpperCase(),city:$('f-city').value.trim().toUpperCase()};}
+
+function draw(f,cv){
+ const {W,H}=f;if(cv.width!==W)cv.width=W;if(cv.height!==H)cv.height=H;
+ const x=cv.getContext('2d');x.save();
+ const P=palette(),F=fields(),bg=P.bg,acc=hex(P.acc),paper=hex(P.paper);
+ const shade=$('f-shade').value/100, grain=$('f-grain').value/100, zoom=$('f-zoom').value/100, flip=$('f-flip').checked;
+ x.fillStyle=hex(bg);x.fillRect(0,0,W,H);
+ if(S.img){const s=Math.max(W/S.iw,H/S.ih)*zoom,dw=S.iw*s,dh=S.ih*s;
+  x.save();if(flip){x.translate(W,0);x.scale(-1,1);}x.drawImage(S.img,(W-dw)*f.fx,(H-dh)*f.fy,dw,dh);x.restore();}
+ // falloff towards the type side and the info block, then dark edges
+ let g=x.createLinearGradient(0,0,W,0);g.addColorStop(.3,rgba(bg,0));g.addColorStop(.78,rgba(bg,.7*shade));g.addColorStop(1,rgba(bg,.82*shade));x.fillStyle=g;x.fillRect(0,0,W,H);
+ g=x.createLinearGradient(0,H,0,H*.66);g.addColorStop(0,rgba(bg,.88*shade));g.addColorStop(1,rgba(bg,0));x.fillStyle=g;x.fillRect(0,0,W,H);
+ g=x.createRadialGradient(W/2,H/2,Math.min(W,H)*.3,W/2,H/2,Math.hypot(W,H)*.55);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${.6*shade})`);x.fillStyle=g;x.fillRect(0,0,W,H);
+
+ // lockup: logo, date circle, month, katakana, line-up
+ const L=f.L*W,R=f.R*W,T=f.top*H;
+ if(imgs.word)x.drawImage(tinted(imgs.word,L,L*WORD_AR,acc),R-.90*L,T,L,L*WORD_AR);
+ const cx=R-.30*L,cy=T+.49*L,r=.2*L;
+ x.strokeStyle=acc;x.fillStyle=acc;x.lineWidth=.0085*L;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.stroke();
+ if(F.day){x.font=`400 ${.25*L}px ${GROT}`;track(x,-.01*.25*L);x.textAlign='left';x.textBaseline='alphabetic';
+  const m=x.measureText(F.day);x.fillText(F.day,cx-(m.actualBoundingBoxRight-m.actualBoundingBoxLeft)/2,cy+(m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);}
+ track(x,0);x.textAlign='center';x.textBaseline='middle';x.font=`400 ${.042*L}px ${GROT}`;
+ const mx=cx-.135*L,my=cy+.033*L,mstep=(F.month.length>6?.05:.06)*L;
+ [...F.month].forEach((ch,i)=>x.fillText(ch,mx,my+i*mstep));
+ const monthBottom=F.month?my+(F.month.length-1)*mstep+.025*L:0;
+ x.save();x.translate(R-.025*L,cy+.23*L);x.rotate(-Math.PI/2);x.textAlign='left';x.font=`300 ${.06*L}px ${JP}`;x.fillText(KATAKANA,0,0);x.restore();
+
+ if(F.names.length){
+  // Two candidates: names stacked under the month column (full width), or kept beside it
+  // (narrower, starts higher). The one that allows the bigger type wins.
+  const fit=(maxW,below)=>{let size=.118*L;
+   for(let it=0;it<60;it++){
+    x.font=`500 ${size}px ${GROT}`;track(x,-.02*size);
+    const ws=F.names.map(n=>x.measureText(n).width),cap=.72*size,step=1.035*size;
+    if(Math.max(...ws)>maxW){size*=maxW/Math.max(...ws);continue;}
+    let b0=cy+.305*L+cap;
+    if(below)F.names.forEach((n,i)=>{const top=b0+i*step-cap;if(R-ws[i]<mx+.03*L&&top<monthBottom)b0+=monthBottom-top+.02*L;});
+    if(b0+(F.names.length-1)*step+.05*size<=f.maxB*H||size<.02*L)return {size,b0,step};
+    size*=.95;}
+   return {size,b0:cy+.305*L+.72*size,step:1.035*size};};
+  const a=fit(1.05*L,true),b=F.month?fit(R-mx-.04*L,false):a,lay=b.size>a.size*1.05?b:a;
+  x.font=`500 ${lay.size}px ${GROT}`;track(x,-.02*lay.size);
+  x.textAlign='right';x.textBaseline='alphabetic';x.fillStyle=acc;
+  F.names.forEach((n,i)=>x.fillText(n,R-.005*L,lay.b0+i*lay.step));track(x,0);}
+
+ // info block: V✦ + three Mincho lines
+ const fs=f.is*W,lh=fs*1.38,yb=f.ib*H,vx=f.ix*W,vh=2.2*fs,vw=vh*MONO_AR;
+ const lines=['VANDALISM'+(F.venue?' @ '+F.venue:''),[F.y&&`${F.y}.${F.month}.${F.day}.`,F.city].filter(Boolean).join(' '),KATAKANA];
+ const y1=yb-2*lh,mid=(y1-.72*fs+yb)/2;
+ if(imgs.mono)x.drawImage(tinted(imgs.mono,vw,vh,paper),vx,mid-vh/2,vw,vh);
+ x.fillStyle=paper;x.textAlign='left';x.textBaseline='alphabetic';x.font=`400 ${fs}px ${SERIF}`;track(x,.02*fs);
+ lines.forEach((t,i)=>x.fillText(t,vx+vw+.9*fs,y1+i*lh));track(x,0);
+
+ if(grain>0){x.globalCompositeOperation='overlay';x.globalAlpha=grain*.55;x.fillStyle=x.createPattern(grainTile(),'repeat');x.fillRect(0,0,W,H);}
+ x.restore();}
+
+/* ---------- stage ---------- */
+const stage=$('stage'),cvs={};
+function figure(f){const fig=document.createElement('figure');
+ fig.innerHTML=`<canvas tabindex="0" aria-label="${f.name} flyer előnézet. Húzással vagy nyilakkal igazítható a háttér."></canvas><figcaption><span class="t"><b>${f.name}</b>${f.W}×${f.H} · ${f.use}</span><button type="button" class="btn">Letöltés</button></figcaption>`;
+ const cv=fig.querySelector('canvas');cvs[f.id]=cv;fig.querySelector('button').addEventListener('click',()=>downloadOne(f));
+ let drag=null;
+ const pan=(dxCss,dyCss)=>{if(!S.img)return;const k=f.W/cv.clientWidth,s=Math.max(f.W/S.iw,f.H/S.ih)*$('f-zoom').value/100;
+  const ox=f.W-S.iw*s,oy=f.H-S.ih*s,sx=$('f-flip').checked?-1:1;
+  if(ox<-.5)f.fx=Math.min(1,Math.max(0,f.fx+sx*dxCss*k/ox));if(oy<-.5)f.fy=Math.min(1,Math.max(0,f.fy+dyCss*k/oy));draw(f,cv);};
+ cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId);});
+ cv.addEventListener('pointermove',e=>{if(!drag)return;pan(e.clientX-drag.x,e.clientY-drag.y);drag={x:e.clientX,y:e.clientY};});
+ ['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,()=>drag=null));
+ cv.addEventListener('keydown',e=>{const d={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,-8],ArrowDown:[0,8]}[e.key];if(d){e.preventDefault();pan(...d);}});
+ return fig;}
+stage.append(figure(FORMATS[0]));
+const pair=document.createElement('div');pair.className='pair';pair.append(figure(FORMATS[1]),figure(FORMATS[2]));stage.append(pair);
+
+let queued=false;
+function renderAll(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;FORMATS.forEach(f=>draw(f,cvs[f.id]));});}
+
+async function setBackground(src,name){
+ try{const im=await loadImg(src);S.img=im;S.iw=im.naturalWidth;S.ih=im.naturalHeight;S.name=name;
+  S.pal=analyse(im,S.iw,S.ih);FORMATS.forEach(f=>{f.fx=f.fx0;f.fy=f.fy0;});
+  $('thumb').src=src;$('bgname').textContent=name;showPalette();renderAll();status('');}
+ catch(e){status('Ezt a fájlt nem tudtam képként megnyitni. Próbáld JPG, PNG vagy WebP formátumban.');}}
+function readFile(file){if(!file||!file.type.startsWith('image/')){status('Ez nem képfájl. JPG, PNG vagy WebP képet tölts fel.');return;}
+ const fr=new FileReader();fr.onload=()=>setBackground(fr.result,file.name||'Beillesztett kép');fr.readAsDataURL(file);}
+$('f-file').addEventListener('change',e=>readFile(e.target.files[0]));
+const drop=$('drop');
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>readFile(e.dataTransfer.files[0]));
+window.addEventListener('paste',e=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it){e.preventDefault();readFile(it.getAsFile());}});
+$('form').addEventListener('submit',e=>e.preventDefault());
+$('form').addEventListener('input',e=>{['zoom','shade','grain'].forEach(k=>{$('o-'+k).textContent=$('f-'+k).value+(k==='zoom'?'%':'');});
+ if(e.target.name==='acc')showPalette();renderAll();});
+$('form').addEventListener('change',e=>{if(e.target.name==='acc'){showPalette();renderAll();}});
+$('reset').addEventListener('click',()=>{FORMATS.forEach(f=>{f.fx=f.fx0;f.fy=f.fy0;});$('f-zoom').value=100;$('o-zoom').textContent='100%';renderAll();});
+
+/* ---------- export ---------- */
+function status(t){$('status').textContent=t;}
+const slug=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+function baseName(){const F=fields();return ['vandalism',slug(F.venue),F.iso].filter(Boolean).join('_');}
+function check(){const F=fields();if(!F.iso){status('Add meg a dátumot.');$('f-date').focus();return false;}if(!F.names.length){status('Adj meg legalább egy fellépőt.');$('f-lineup').focus();return false;}return true;}
+function blobOf(f){const c=document.createElement('canvas');draw(f,c);const png=$('f-fmt').value==='png';
+ return new Promise(ok=>c.toBlob(ok,png?'image/png':'image/jpeg',.93));}
+let dl=null;
+if(window.claude&&typeof window.claude.use==='function')window.claude.use('downloads').then(d=>{dl=d;}).catch(()=>{});
+async function save(name,blob){
+ if(dl){try{await dl.save({filename:name,data:blob});status('Mentve: '+name);}
+  catch(e){status(e&&e.code==='declined'?'A mentést megszakítottad.':e&&e.code==='rate_limited'?'Már nyitva van egy mentési ablak, előbb azt zárd le.':'A letöltés ebben a nézetben nem érhető el.');}return;}
+ const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);status('Letöltve: '+name);}
+async function downloadOne(f){if(!check())return;status('Készül: '+f.name+'…');const b=await blobOf(f);save(`${baseName()}_${f.id}.${$('f-fmt').value}`,b);}
+
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u){let c=~0;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return (~c)>>>0;}
+// stored (uncompressed) zip: PNG/JPG are already compressed
+function zip(files){const enc=new TextEncoder(),parts=[],cent=[];let off=0;
+ for(const f of files){const n=enc.encode(f.name),crc=crc32(f.data),sz=f.data.length;
+  const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(12,0x21,true);h.setUint32(14,crc,true);h.setUint32(18,sz,true);h.setUint32(22,sz,true);h.setUint16(26,n.length,true);
+  parts.push(h,n,f.data);
+  const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(14,0x21,true);c.setUint32(16,crc,true);c.setUint32(20,sz,true);c.setUint32(24,sz,true);c.setUint16(28,n.length,true);c.setUint32(42,off,true);
+  cent.push(c,n);off+=30+n.length+sz;}
+ const cs=cent.reduce((a,p)=>a+p.byteLength,0),e=new DataView(new ArrayBuffer(22));
+ e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+ return new Blob([...parts,...cent,e],{type:'application/zip'});}
+$('dl-all').addEventListener('click',async()=>{if(!check())return;status('Készül a három kép…');const ext=$('f-fmt').value,base=baseName(),files=[];
+ for(const f of FORMATS){const b=await blobOf(f);files.push({name:`${base}_${f.id}.${ext}`,data:new Uint8Array(await b.arrayBuffer())});}
+ save(base+'.zip',zip(files));});
+
+/* ---------- boot ---------- */
+Promise.all([loadImg(WORDMARK).then(i=>imgs.word=i),loadImg(MONOGRAM).then(i=>imgs.mono=i)]).then(renderAll);
+const fontLoads=[['400 100px "Inter Tight"','0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'],['500 100px "Inter Tight"','ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ÁÉÍÓÖŐÚÜŰ'],['300 40px "Noto Sans JP"',KATAKANA],['400 40px "BIZ UDPMincho"','VANDALISM@.0123456789 BUDAPEST'+KATAKANA]];
+if(document.fonts)Promise.all(fontLoads.map(([f,t])=>document.fonts.load(f,t).catch(()=>{}))).then(renderAll);
+setBackground(SAMPLE,'Minta: alagút (moodboard A vázlat)');
+showPalette();renderAll();
+})();
+</script>
