@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=BIZ+UDPMincho&family=Inter+Tight:wght@400;500&family=Noto+Sans+JP:wght@300;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=BIZ+UDPMincho&family=Inter:wght@400;500&family=Noto+Sans+JP:wght@300;500&display=swap">
 <style>
 /* Layout: control rail on the left, the three live canvases on the right (16:9 across, 4:5 + 9:16 below). Single dark look, like the moodboard. */
 :root{
@@ -29,7 +29,7 @@ h1{font-family:var(--display);font-stretch:72%;font-weight:750;text-transform:up
 .k,label.k{font-family:var(--display);font-stretch:85%;font-weight:650;text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--muted)}
 .k b{color:var(--red);font-weight:650}
 input[type=text],input[type=date],textarea,select{width:100%;background:var(--panel);color:var(--paper);border:1px solid var(--line);border-radius:0;padding:9px 11px;font:15px/1.4 var(--serif)}
-textarea{resize:vertical;min-height:96px;font-family:"Inter Tight",Arial,sans-serif;font-weight:500;text-transform:uppercase;letter-spacing:-.01em;font-size:17px;line-height:1.35}
+textarea{resize:vertical;min-height:96px;font-family:"Inter",Arial,sans-serif;font-weight:500;text-transform:uppercase;letter-spacing:-.01em;font-size:17px;line-height:1.35}
 input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px;border-color:var(--red)}
 .hint{font-size:12px;color:var(--muted);margin:0}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -99,7 +99,7 @@ figcaption .t b{font-family:var(--display);font-stretch:85%;font-weight:650;text
   </div>
 
   <div class="row2">
-    <div class="field"><label class="k" for="f-date">Dátum <b>*</b></label><input type="date" id="f-date" value="2025-03-21"></div>
+    <div class="field"><label class="k" for="f-date">Dátum <b>*</b></label><input type="date" id="f-date" value="2026-11-20"></div>
     <div class="field"><label class="k" for="f-city">Város</label><input type="text" id="f-city" value="Budapest"></div>
   </div>
 
@@ -128,8 +128,10 @@ ILLROCK</textarea>
   <div class="field">
     <span class="k">Kép</span>
     <label class="sl" for="f-zoom">Nagyítás<input type="range" id="f-zoom" min="100" max="220" value="100"><output id="o-zoom">100%</output></label>
-    <label class="sl" for="f-shade">Sötétítés<input type="range" id="f-shade" min="0" max="100" value="60"><output id="o-shade">60</output></label>
-    <label class="sl" for="f-grain">Szemcse<input type="range" id="f-grain" min="0" max="100" value="35"><output id="o-grain">35</output></label>
+    <label class="sl" for="f-shade">Sötétítés<input type="range" id="f-shade" min="0" max="100" value="45"><output id="o-shade">45</output></label>
+    <label class="sl" for="f-grain">Szemcse<input type="range" id="f-grain" min="0" max="100" value="55"><output id="o-grain">55</output></label>
+    <label class="sl" for="f-grade">Éjszakai tónus<input type="range" id="f-grade" min="0" max="100" value="65"><output id="o-grade">65</output></label>
+    <label class="sl" for="f-glow">Ragyogás<input type="range" id="f-glow" min="0" max="100" value="60"><output id="o-glow">60</output></label>
     <label style="font-size:14px"><input type="checkbox" id="f-flip"> Kép tükrözése (ha a fő motívum a jobb oldalon van)</label>
     <p class="hint">A képet az előnézeten húzva formátumonként külön is igazíthatod.</p>
     <button type="button" class="btn" id="reset">Pozíciók visszaállítása</button>
@@ -156,17 +158,18 @@ ILLROCK</textarea>
 'use strict';
 const WORDMARK='__WORDMARK__', MONOGRAM='__MONOGRAM__', SAMPLE='__SAMPLE__';
 const BRAND='#D52727', KATAKANA='バンダリズム';
-const GROT='"Inter Tight","Helvetica Neue",Helvetica,Arial,sans-serif';
+const GROT='"Inter","Helvetica Neue",Helvetica,Arial,sans-serif';
 const SERIF='"BIZ UDPMincho","Yu Mincho","MS Mincho","Times New Roman",serif';
 const JP='"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif';
 const MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
 
-// Layout per format, measured from the ROOTS flyers. L = logo width, R = right edge of the
-// "VANDALISM" lettering, top = logo top (star tip); info = V✦ block in the bottom left.
+// Layout per format, measured from the approved Vandalism flyers. L = logo width,
+// R = right edge of the "VANDALISM" lettering, top = logo top (star tip), gap = line-up
+// top below the date circle centre (in L). Info = V✦ block: bottom-left, or top-left on 16:9.
 const FORMATS=[
- {id:'16x9',W:1920,H:1080,name:'16:9',use:'Facebook esemény, YouTube, kijelző',L:.39,R:.906,top:.14,maxB:.92,ix:.05,ib:.925,is:.0146,fx:.5,fy:.5},
- {id:'4x5',W:1080,H:1350,name:'4:5',use:'Instagram poszt',L:.54,R:.912,top:.035,maxB:.86,ix:.277,ib:.955,is:.023,fx:.3,fy:.5},
- {id:'9x16',W:1080,H:1920,name:'9:16',use:'Story, Reels',L:.66,R:.912,top:.185,maxB:.87,ix:.25,ib:.955,is:.026,fx:.3,fy:.5}];
+ {id:'16x9',W:1920,H:1080,name:'16:9',use:'Facebook esemény, YouTube, kijelző',L:.40,R:.913,top:.144,gap:.29,lu:.13,maxB:.93,ix:.047,iy:.06,top0:true,is:.0156,fx:.5,fy:.5},
+ {id:'4x5',W:1080,H:1350,name:'4:5',use:'Instagram poszt',L:.57,R:.91,top:.093,gap:.48,lu:.155,maxB:.84,ix:.208,iy:.937,is:.027,fx:.3,fy:.5},
+ {id:'9x16',W:1080,H:1920,name:'9:16',use:'Story, Reels',L:.66,R:.914,top:.182,gap:.46,lu:.135,maxB:.86,ix:.213,iy:.943,is:.027,fx:.3,fy:.5}];
 FORMATS.forEach(f=>{f.fx0=f.fx;f.fy0=f.fy;});
 const WORD_AR=1426.18/4764.51, MONO_AR=1172/832;
 
@@ -213,7 +216,7 @@ function analyse(src,sw,sh){
  const darks=cl.filter(c=>c.L<0.35).sort((a,b)=>b.w-a.w);const bgC=darks[0]||[...cl].sort((a,b)=>a.L-b.L)[0];
  const bg=lchRgb(Math.min(bgC.L,0.16),Math.min(bgC.C,0.035),bgC.h);
  let acc=null;
- if(lp.share>0.004&&lp.peaks.length){const p=lp.peaks[0];let L=0.6;const C=Math.min(Math.max(p.C,0.17),0.24);acc=lchRgb(L,C,p.h);while(ratio(acc,bg)<3&&L<0.9){L+=0.02;acc=lchRgb(L,C,p.h);}}
+ if(lp.share>0.004&&lp.peaks.length){const p=lp.peaks[0];let L=0.63;const C=Math.max(p.C,0.3);acc=lchRgb(L,C,p.h);while(ratio(acc,bg)<3&&L<0.9){L+=0.02;acc=lchRgb(L,C,p.h);}}
  let pL=0.94;let paper=lchRgb(pL,0.012,bgC.h);while(ratio(paper,bg)<7&&pL<0.99){pL+=0.01;paper=lchRgb(pL,0.012,bgC.h);}
  return {bg,accImg:acc,paper};}
 function palette(){const p=S.pal||{bg:h2r('#0A0B0C'),accImg:null,paper:h2r('#EDE9E1')};
@@ -236,59 +239,66 @@ function fields(){
  return {y:m?m[1]:'',month:m?MONTHS[+m[2]-1]:'',day:m?String(+m[3]):'',iso:m?d:'',names,
   venue:$('f-venue').value.trim().toUpperCase(),city:$('f-city').value.trim().toUpperCase()};}
 
+const NAVY=[20,25,37];
+const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
 function draw(f,cv){
  const {W,H}=f;if(cv.width!==W)cv.width=W;if(cv.height!==H)cv.height=H;
  const x=cv.getContext('2d');x.save();
- const P=palette(),F=fields(),bg=P.bg,acc=hex(P.acc),paper=hex(P.paper);
- const shade=$('f-shade').value/100, grain=$('f-grain').value/100, zoom=$('f-zoom').value/100, flip=$('f-flip').checked;
+ const P=palette(),F=fields(),acc=hex(P.acc),paper=hex(P.paper);
+ const v=k=>$('f-'+k).value/100;
+ const shade=v('shade'),grain=v('grain'),grade=v('grade'),glow=v('glow'),zoom=v('zoom'),flip=$('f-flip').checked;
+ const bg=mix(P.bg,NAVY,grade);
  x.fillStyle=hex(bg);x.fillRect(0,0,W,H);
  if(S.img){const s=Math.max(W/S.iw,H/S.ih)*zoom,dw=S.iw*s,dh=S.ih*s;
-  x.save();if(flip){x.translate(W,0);x.scale(-1,1);}x.drawImage(S.img,(W-dw)*f.fx,(H-dh)*f.fy,dw,dh);x.restore();}
- // falloff towards the type side and the info block, then dark edges
- let g=x.createLinearGradient(0,0,W,0);g.addColorStop(.3,rgba(bg,0));g.addColorStop(.78,rgba(bg,.7*shade));g.addColorStop(1,rgba(bg,.82*shade));x.fillStyle=g;x.fillRect(0,0,W,H);
- g=x.createLinearGradient(0,H,0,H*.66);g.addColorStop(0,rgba(bg,.88*shade));g.addColorStop(1,rgba(bg,0));x.fillStyle=g;x.fillRect(0,0,W,H);
- g=x.createRadialGradient(W/2,H/2,Math.min(W,H)*.3,W/2,H/2,Math.hypot(W,H)*.55);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${.6*shade})`);x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.save();if(flip){x.translate(W,0);x.scale(-1,1);}x.drawImage(S.img,(W-dw)*f.fx,(H-dh)*f.fy,dw,dh);x.restore();
+  if(grade>0){// faded night grade: less colour, cool cast, lifted navy blacks
+   x.globalCompositeOperation='saturation';x.globalAlpha=.62*grade;x.fillStyle='#808080';x.fillRect(0,0,W,H);
+   x.globalCompositeOperation='color';x.globalAlpha=.22*grade;x.fillStyle='#4A5F80';x.fillRect(0,0,W,H);
+   x.globalCompositeOperation='lighten';x.globalAlpha=grade;x.fillStyle=hex(NAVY);x.fillRect(0,0,W,H);
+   x.globalCompositeOperation='source-over';x.globalAlpha=1;}}
+ let g=x.createLinearGradient(0,0,W,0);g.addColorStop(.3,rgba(bg,0));g.addColorStop(.78,rgba(bg,.6*shade));g.addColorStop(1,rgba(bg,.75*shade));x.fillStyle=g;x.fillRect(0,0,W,H);
+ g=f.top0?x.createLinearGradient(0,0,0,H*.3):x.createLinearGradient(0,H,0,H*.66);g.addColorStop(0,rgba(bg,.85*shade));g.addColorStop(1,rgba(bg,0));x.fillStyle=g;x.fillRect(0,0,W,H);
+ g=x.createRadialGradient(W/2,H/2,Math.min(W,H)*.3,W/2,H/2,Math.hypot(W,H)*.55);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${.65*shade})`);x.fillStyle=g;x.fillRect(0,0,W,H);
 
- // lockup: logo, date circle, month, katakana, line-up
+ // accent lockup on its own layer, so it can glow as one piece
+ const lay=document.createElement('canvas');lay.width=W;lay.height=H;const y=lay.getContext('2d');
  const L=f.L*W,R=f.R*W,T=f.top*H;
- if(imgs.word)x.drawImage(tinted(imgs.word,L,L*WORD_AR,acc),R-.90*L,T,L,L*WORD_AR);
- const cx=R-.30*L,cy=T+.49*L,r=.2*L;
- x.strokeStyle=acc;x.fillStyle=acc;x.lineWidth=.0085*L;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.stroke();
- if(F.day){x.font=`400 ${.25*L}px ${GROT}`;track(x,-.01*.25*L);x.textAlign='left';x.textBaseline='alphabetic';
-  const m=x.measureText(F.day);x.fillText(F.day,cx-(m.actualBoundingBoxRight-m.actualBoundingBoxLeft)/2,cy+(m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);}
- track(x,0);x.textAlign='center';x.textBaseline='middle';x.font=`400 ${.042*L}px ${GROT}`;
- const mx=cx-.135*L,my=cy+.033*L,mstep=(F.month.length>6?.05:.06)*L;
- [...F.month].forEach((ch,i)=>x.fillText(ch,mx,my+i*mstep));
- const monthBottom=F.month?my+(F.month.length-1)*mstep+.025*L:0;
- x.save();x.translate(R-.025*L,cy+.23*L);x.rotate(-Math.PI/2);x.textAlign='left';x.font=`300 ${.06*L}px ${JP}`;x.fillText(KATAKANA,0,0);x.restore();
-
+ if(imgs.word)y.drawImage(tinted(imgs.word,L,L*WORD_AR,acc),R-.90*L,T,L,L*WORD_AR);
+ const cx=R-.30*L,cy=T+.49*L,r=.19*L;
+ y.strokeStyle=acc;y.fillStyle=acc;y.lineWidth=.011*L;y.beginPath();y.arc(cx,cy,r,0,Math.PI*2);y.stroke();
+ if(F.day){y.font=`500 ${.22*L}px ${GROT}`;track(y,-.02*.22*L);y.textAlign='left';y.textBaseline='alphabetic';
+  const m=y.measureText(F.day);y.fillText(F.day,cx-(m.actualBoundingBoxRight-m.actualBoundingBoxLeft)/2,cy+(m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);}
+ track(y,0);y.textAlign='center';y.textBaseline='middle';
+ // month and katakana flank the circle as two upright columns of the same height
+ const colTop=T+.295*L,colBot=T+.665*L,colStack=(chars,xc,size,font)=>{if(!chars.length)return;
+  const step=chars.length>1?Math.min((colBot-colTop)/(chars.length-1),1.45*size):0,y0=(colTop+colBot)/2-step*(chars.length-1)/2;
+  y.font=font;chars.forEach((ch,i)=>y.fillText(ch,xc,y0+i*step));};
+ colStack([...F.month],R-.535*L,.052*L,`500 ${.052*L}px ${GROT}`);
+ colStack([...KATAKANA],R-.065*L,.056*L,`300 ${.056*L}px ${JP}`);
  if(F.names.length){
-  // Two candidates: names stacked under the month column (full width), or kept beside it
-  // (narrower, starts higher). The one that allows the bigger type wins.
-  const fit=(maxW,below)=>{let size=.118*L;
-   for(let it=0;it<60;it++){
-    x.font=`500 ${size}px ${GROT}`;track(x,-.02*size);
-    const ws=F.names.map(n=>x.measureText(n).width),cap=.72*size,step=1.035*size;
-    if(Math.max(...ws)>maxW){size*=maxW/Math.max(...ws);continue;}
-    let b0=cy+.305*L+cap;
-    if(below)F.names.forEach((n,i)=>{const top=b0+i*step-cap;if(R-ws[i]<mx+.03*L&&top<monthBottom)b0+=monthBottom-top+.02*L;});
-    if(b0+(F.names.length-1)*step+.05*size<=f.maxB*H||size<.02*L)return {size,b0,step};
-    size*=.95;}
-   return {size,b0:cy+.305*L+.72*size,step:1.035*size};};
-  const a=fit(1.05*L,true),b=F.month?fit(R-mx-.04*L,false):a,lay=b.size>a.size*1.05?b:a;
-  x.font=`500 ${lay.size}px ${GROT}`;track(x,-.02*lay.size);
-  x.textAlign='right';x.textBaseline='alphabetic';x.fillStyle=acc;
-  F.names.forEach((n,i)=>x.fillText(n,R-.005*L,lay.b0+i*lay.step));track(x,0);}
+  let size=f.lu*L,b0,step;
+  for(let it=0;it<60;it++){
+   y.font=`500 ${size}px ${GROT}`;track(y,-.02*size);
+   const mw=Math.max(...F.names.map(n=>y.measureText(n).width));
+   if(mw>1.1*L){size*=1.1*L/mw;continue;}
+   step=1.32*size;b0=cy+f.gap*L+.72*size;
+   if(b0+(F.names.length-1)*step+.05*size<=f.maxB*H||size<.02*L)break;
+   size*=.95;}
+  y.textAlign='right';y.textBaseline='alphabetic';
+  F.names.forEach((n,i)=>y.fillText(n,R-.01*L,b0+i*step));track(y,0);}
+ if(glow>0){x.save();x.shadowColor=rgba(P.acc,.85);x.shadowBlur=.03*L*glow;x.drawImage(lay,0,0);x.shadowBlur=.008*L*glow;x.drawImage(lay,0,0);x.restore();}
+ x.drawImage(lay,0,0);
 
  // info block: V✦ + three Mincho lines
- const fs=f.is*W,lh=fs*1.38,yb=f.ib*H,vx=f.ix*W,vh=2.2*fs,vw=vh*MONO_AR;
+ const fs=f.is*W,lh=fs*1.37,vx=f.ix*W,vh=1.9*fs,vw=vh*MONO_AR;
  const lines=['VANDALISM'+(F.venue?' @ '+F.venue:''),[F.y&&`${F.y}.${F.month}.${F.day}.`,F.city].filter(Boolean).join(' '),KATAKANA];
- const y1=yb-2*lh,mid=(y1-.72*fs+yb)/2;
+ const y1=f.top0?f.iy*H+.72*fs:f.iy*H-2*lh,mid=(y1-.72*fs+y1+2*lh)/2;
  if(imgs.mono)x.drawImage(tinted(imgs.mono,vw,vh,paper),vx,mid-vh/2,vw,vh);
- x.fillStyle=paper;x.textAlign='left';x.textBaseline='alphabetic';x.font=`400 ${fs}px ${SERIF}`;track(x,.02*fs);
- lines.forEach((t,i)=>x.fillText(t,vx+vw+.9*fs,y1+i*lh));track(x,0);
+ x.fillStyle=paper;x.textAlign='left';x.textBaseline='alphabetic';x.font=`400 ${fs}px ${SERIF}`;track(x,.06*fs);
+ lines.forEach((t,i)=>x.fillText(t,vx+vw+.6*fs,y1+i*lh));track(x,0);
 
- if(grain>0){x.globalCompositeOperation='overlay';x.globalAlpha=grain*.55;x.fillStyle=x.createPattern(grainTile(),'repeat');x.fillRect(0,0,W,H);}
+ if(grain>0){x.globalCompositeOperation='overlay';x.globalAlpha=grain*.7;const pat=x.createPattern(grainTile(),'repeat'),k=Math.max(1,W/1300);
+  if(pat.setTransform)pat.setTransform(new DOMMatrix([k,0,0,k,0,0]));x.fillStyle=pat;x.fillRect(0,0,W,H);}
  x.restore();}
 
 /* ---------- stage ---------- */
@@ -325,7 +335,7 @@ const drop=$('drop');
 drop.addEventListener('drop',e=>readFile(e.dataTransfer.files[0]));
 window.addEventListener('paste',e=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it){e.preventDefault();readFile(it.getAsFile());}});
 $('form').addEventListener('submit',e=>e.preventDefault());
-$('form').addEventListener('input',e=>{['zoom','shade','grain'].forEach(k=>{$('o-'+k).textContent=$('f-'+k).value+(k==='zoom'?'%':'');});
+$('form').addEventListener('input',e=>{['zoom','shade','grain','grade','glow'].forEach(k=>{$('o-'+k).textContent=$('f-'+k).value+(k==='zoom'?'%':'');});
  if(e.target.name==='acc')showPalette();renderAll();});
 $('form').addEventListener('change',e=>{if(e.target.name==='acc'){showPalette();renderAll();}});
 $('reset').addEventListener('click',()=>{FORMATS.forEach(f=>{f.fx=f.fx0;f.fy=f.fy0;});$('f-zoom').value=100;$('o-zoom').textContent='100%';renderAll();});
@@ -363,7 +373,7 @@ $('dl-all').addEventListener('click',async()=>{if(!check())return;status('Kész�
 
 /* ---------- boot ---------- */
 Promise.all([loadImg(WORDMARK).then(i=>imgs.word=i),loadImg(MONOGRAM).then(i=>imgs.mono=i)]).then(renderAll);
-const fontLoads=[['400 100px "Inter Tight"','0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'],['500 100px "Inter Tight"','ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ÁÉÍÓÖŐÚÜŰ'],['300 40px "Noto Sans JP"',KATAKANA],['400 40px "BIZ UDPMincho"','VANDALISM@.0123456789 BUDAPEST'+KATAKANA]];
+const fontLoads=[['400 100px "Inter"','0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'],['500 100px "Inter"','ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ÁÉÍÓÖŐÚÜŰ'],['300 40px "Noto Sans JP"',KATAKANA],['400 40px "BIZ UDPMincho"','VANDALISM@.0123456789 BUDAPEST'+KATAKANA]];
 if(document.fonts)Promise.all(fontLoads.map(([f,t])=>document.fonts.load(f,t).catch(()=>{}))).then(renderAll);
 setBackground(SAMPLE,'Minta: alagút (moodboard A vázlat)');
 showPalette();renderAll();

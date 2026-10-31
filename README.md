@@ -20,10 +20,12 @@ egyszerre elkészíti a flyert három formátumban.
 
 ## Mit vesz át a moodboardból
 
-- **Alapváz** a ROOTS-flyerekről mérve: logó a dobócsillaggal jobbra fent, körbe írt nap, függőleges hónapnév és katakana, jobbra zárt line-up, a V✦ infóblokk bal lent.
+- **Alapváz** a jóváhagyott Vandalism-flyerekről mérve (2026. október és november): logó a dobócsillaggal jobbra fent, alatta a körbe írt nap, a kör két oldalán egyforma magas, álló oszlopban a hónapnév és a バンダリズム, alatta a jobbra zárt line-up. A V✦ infóblokk 4:5-ön és 9:16-on bal lent, 16:9-en bal fent van.
+- **Ragyogás**: a logó, a dátum és a line-up egy rétegen van, és együtt ragyog a kiemelő színnel.
+- **Éjszakai tónus**: a háttérkép színeit tompítja, hideg kék árnyalatot ad neki, és sötétkékre emeli a mélyfeketét.
 - **Paletta a háttérképből** (OKLab k-közép): a háttér a kép legsötétebb nagy felülete, a kiemelő a legerősebb fényforrás, legalább 3:1-es kontraszttal. Ezt kapja a logó, a dátum és a line-up. A papírszín legalább 7:1-es kontrasztú, ezt kapja az infóblokk. Szürke képnél, vagy ha kéred, a Jelpiros (#D52727) lép be.
-- **Textúra**: sötétedő szélek, átmenet a szöveges oldal felé, szemcse. Mindhárom erőssége állítható.
-- Hosszú line-upnál a betűméret magától csökken. A nevek a hónaposzlop mellé vagy alá kerülnek, attól függően, hol férnek el nagyobb betűvel.
+- **Textúra**: sötétedő szélek, átmenet a szöveges oldal felé, erős szemcse. A tónus, a ragyogás, a sötétítés és a szemcse erőssége is csúszkával állítható.
+- Hosszú line-upnál a betűméret magától csökken.
 
 ## Fejlesztés
 
