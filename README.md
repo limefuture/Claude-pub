@@ -1,3 +1,10 @@
+# Claude-pub
+
+| Mappa | Mi ez |
+|---|---|
+| [`videovago/`](videovago/README.md) | Veszteségmentes, offline videóvágó és -forgató (ffmpeg, újrakódolás nélkül) |
+| `generator/`, `moodboard/` | Vandalism flyer generátor (lent) |
+
 # Vandalism flyer generátor
 
 A `moodboard/` mappában az eredeti Vandalism moodboard van (logók, ROOTS-flyerek, színszabályok).

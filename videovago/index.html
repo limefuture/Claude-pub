@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Videóvágó</title>
+<style>
+:root {
+  --bg: #111317; --panel: #1a1d23; --panel2: #22262e; --line: #2e333d;
+  --text: #e7e9ee; --muted: #8b93a3; --accent: #4f9cff; --accent2: #2f6fd1;
+  --keep: rgba(79,156,255,.35); --keep-edge: #4f9cff; --sel: rgba(255,196,64,.30);
+  --key: #6b7385; --danger: #ff5d5d; --ok: #3fcf8e; --warn: #ffb547;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-size: 14px; }
+button, input, select { font: inherit; color: inherit; }
+button {
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+  padding: 6px 10px; cursor: pointer; white-space: nowrap;
+}
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .4; cursor: default; }
+button.primary { background: var(--accent2); border-color: var(--accent2); font-weight: 600; }
+button.primary:hover:not(:disabled) { background: var(--accent); }
+button.on { border-color: var(--accent); background: #1d3352; }
+input[type=text], .seg input, select {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px;
+}
+input[type=text]:focus, select:focus { outline: none; border-color: var(--accent); }
+kbd { font-family: ui-monospace, monospace; font-size: 11px; background: var(--panel2);
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; color: var(--muted); }
+.mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+
+#app { display: grid; grid-template-rows: auto 1fr auto; height: 100vh; }
+header { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+header h1 { font-size: 15px; margin: 0 8px 0 0; letter-spacing: .3px; }
+header h1 span { color: var(--accent); }
+#fileName { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40vw; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { background: var(--panel2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; font-size: 12px; color: var(--muted); }
+.chip b { color: var(--text); font-weight: 600; }
+
+main { display: grid; grid-template-columns: 1fr 370px; min-height: 0; }
+#stageWrap { display: grid; grid-template-rows: 1fr auto; min-height: 0; min-width: 0; }
+#stage { position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 200px; }
+#stage video, #stage img { max-width: 100%; max-height: 100%; transition: transform .2s; }
+#stage .placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 14px; align-items: center; justify-content: center; color: var(--muted); text-align: center; padding: 20px; }
+#stage.drag { outline: 3px dashed var(--accent); outline-offset: -10px; }
+#fallbackNote { position: absolute; left: 10px; top: 10px; background: rgba(0,0,0,.7); padding: 4px 8px; border-radius: 6px; font-size: 12px; color: var(--warn); display: none; }
+#rotBadge { position: absolute; right: 10px; top: 10px; background: rgba(0,0,0,.7); padding: 4px 8px; border-radius: 6px; font-size: 12px; display: none; }
+
+#controls { background: var(--panel); border-top: 1px solid var(--line); padding: 8px 12px 10px; display: grid; gap: 8px; }
+.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+#timeNow { font-size: 18px; min-width: 120px; }
+#timeline { position: relative; height: 64px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; cursor: pointer; user-select: none; touch-action: none; }
+#timeline canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#zoomRow input[type=range] { width: 140px; }
+
+aside { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 16px; }
+aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin: 0 0 8px; }
+.card { display: grid; gap: 8px; min-width: 0; }
+.card > * { min-width: 0; }
+#btnExport { white-space: normal; }
+#segList { display: grid; gap: 6px; }
+.seg { display: grid; grid-template-columns: 22px 1fr auto; gap: 6px; align-items: center; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 6px; }
+.seg.active { border-color: var(--accent); }
+.seg .n { color: var(--muted); font-size: 12px; text-align: center; }
+.seg input { width: 100%; min-width: 0; padding: 3px 4px; font-size: 12px; }
+.seg .times { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.seg .dur { font-size: 11px; color: var(--muted); grid-column: 2; }
+.seg .acts { display: flex; gap: 2px; }
+.seg .acts button { padding: 2px 6px; font-size: 12px; }
+.empty { color: var(--muted); font-size: 13px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.rotbtns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+label.chk { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.field { display: grid; gap: 4px; }
+.field > span { font-size: 12px; color: var(--muted); }
+.out-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 6px; }
+.out-row input { min-width: 0; }
+#progress { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+#progress > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+#jobMsg { font-size: 13px; word-break: break-word; }
+#jobMsg.err { color: var(--danger); }
+#jobMsg.ok { color: var(--ok); }
+.note { font-size: 12px; color: var(--muted); line-height: 1.45; }
+.note.warn { color: var(--warn); }
+details summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+details pre { font-size: 11px; white-space: pre-wrap; word-break: break-all; background: var(--bg); padding: 6px; border-radius: 6px; max-height: 180px; overflow: auto; }
+footer { font-size: 12px; color: var(--muted); padding: 6px 12px; border-top: 1px solid var(--line); background: var(--panel); display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* modal */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 10; padding: 16px; }
+.modal.open { display: flex; }
+.modal .box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; width: min(720px, 100%); max-height: 85vh; display: grid; grid-template-rows: auto auto 1fr auto; overflow: hidden; }
+.modal .hd { padding: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+.modal .pathbar { padding: 8px 12px; display: grid; grid-template-columns: auto 1fr auto; gap: 6px; border-bottom: 1px solid var(--line); }
+.modal ul { list-style: none; margin: 0; padding: 4px; overflow-y: auto; }
+.modal li { padding: 6px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; }
+.modal li:hover, .modal li.sel { background: var(--panel2); }
+.modal li .sz { color: var(--muted); font-size: 12px; }
+.modal .ft { padding: 10px 12px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 900px) {
+  main { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+  #stage { height: 42vh; }
+  aside { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  #app { height: auto; min-height: 100vh; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Videó<span>vágó</span></h1>
+    <button id="btnOpen" title="Videó megnyitása (Ctrl+O)">📂 Megnyitás</button>
+    <span id="fileName" class="muted">Nincs megnyitott videó</span>
+    <div class="chips" id="chips"></div>
+  </header>
+
+  <main>
+    <div id="stageWrap">
+      <div id="stage">
+        <video id="video" preload="auto" playsinline hidden></video>
+        <img id="frameImg" alt="" hidden>
+        <div class="placeholder" id="placeholder">
+          <div style="font-size:42px">🎬</div>
+          <div>Nyiss meg egy videót a <b>Megnyitás</b> gombbal.</div>
+          <div class="note">A vágás és a forgatás veszteségmentes: a program nem kódolja újra a képet,<br>
+            az eredeti adatfolyamot másolja át (4K, 60 fps, HDR, 10 bites anyagnál is).</div>
+        </div>
+        <div id="fallbackNote">A böngésző ezt a kodeket nem tudja lejátszani – állóképes előnézet. A vágást ez nem befolyásolja.</div>
+        <div id="rotBadge"></div>
+      </div>
+
+      <div id="controls">
+        <div class="row">
+          <button id="btnPlay" title="Lejátszás / szünet (Szóköz)" disabled>▶</button>
+          <button id="btnPrevKey" title="Előző kulcskocka (↑)" disabled>⏮ K</button>
+          <button id="btnPrevFrame" title="Egy képkocka vissza (←)" disabled>◀|</button>
+          <button id="btnNextFrame" title="Egy képkocka előre (→)" disabled>|▶</button>
+          <button id="btnNextKey" title="Következő kulcskocka (↓)" disabled>K ⏭</button>
+          <span class="sep"></span>
+          <span id="timeNow" class="mono">00:00:00.000</span>
+          <span class="muted mono" id="timeTotal">/ 00:00:00.000</span>
+          <span class="muted mono" id="frameNo"></span>
+          <span class="sep"></span>
+          <button id="btnIn" title="Kezdőpont ide (I)" disabled>[ Kezdet</button>
+          <button id="btnOut" title="Végpont ide (O)" disabled>Vég ]</button>
+          <button id="btnAdd" class="primary" title="Kijelölés hozzáadása szakaszként (Enter)" disabled>+ Szakasz</button>
+          <span class="muted mono" id="selInfo"></span>
+        </div>
+        <div id="timeline" title="Kattints vagy húzd az egeret a pozicionáláshoz. Görgő: nagyítás.">
+          <canvas id="tl"></canvas>
+        </div>
+        <div class="row" id="zoomRow">
+          <label class="chk" title="A kezdőpontot a legközelebbi előző kulcskockára igazítja. Kikapcsolva a kimenet eleje a kulcskockáig hibás lehet.">
+            <input type="checkbox" id="snap" checked> Kezdet igazítása kulcskockára</label>
+          <span class="sep"></span>
+          <span class="muted">Nagyítás</span>
+          <input type="range" id="zoom" min="1" max="200" value="1" step="1">
+          <span class="muted" id="kfInfo"></span>
+        </div>
+      </div>
+    </div>
+
+    <aside>
+      <section class="card">
+        <h2>Megtartott szakaszok</h2>
+        <div id="segList"><div class="empty">Még nincs szakasz. Jelöld ki a kezdetet <kbd>I</kbd> és a véget <kbd>O</kbd>, majd <kbd>Enter</kbd>. Szakasz nélkül a kijelölés (alapból a teljes videó) kerül exportálásra.</div></div>
+        <div class="grid2">
+          <button id="btnClearSegs" disabled>Összes törlése</button>
+          <button id="btnInvert" disabled title="A szakaszok közötti részeket tartja meg (kivágás helyett törlés)">Megfordítás</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Forgatás (metaadat)</h2>
+        <div class="rotbtns">
+          <button data-rot="-90" title="90° balra">↺ 90°</button>
+          <button data-rot="90" title="90° jobbra">↻ 90°</button>
+          <button data-rot="180">180°</button>
+          <button data-rot="0">Alap</button>
+        </div>
+        <div class="note" id="rotNote">A forgatás a fájl megjelenítési mátrixába kerül, a képpontok változatlanok. MP4/MOV formátumban működik; a modern lejátszók (VLC, mpv, böngészők, telefonok, Premiere, DaVinci) mind figyelembe veszik.</div>
+      </section>
+
+      <section class="card">
+        <h2>Exportálás</h2>
+        <div class="field">
+          <span>Kimeneti fájl</span>
+          <div class="out-row">
+            <input type="text" id="outPath" placeholder="…/video_vagott.mp4" spellcheck="false">
+            <select id="container" title="Konténer">
+              <option value="">eredeti</option>
+              <option value=".mp4">MP4</option>
+              <option value=".mov">MOV</option>
+              <option value=".mkv">MKV</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <span>Több szakasz esetén</span>
+          <select id="mode">
+            <option value="merge">Egy fájlba fűzve</option>
+            <option value="separate">Külön fájlokba</option>
+          </select>
+        </div>
+        <label class="chk"><input type="checkbox" id="keepAudio" checked> Hangsávok megtartása</label>
+        <label class="chk"><input type="checkbox" id="keepSubs" checked> Feliratok megtartása (ha a formátum engedi)</label>
+        <button class="primary" id="btnExport" disabled>⬇ Exportálás újrakódolás nélkül</button>
+        <div id="progress"><div></div></div>
+        <div id="jobMsg" class="muted"></div>
+        <div class="row">
+          <button id="btnCancel" hidden>Megszakítás</button>
+          <button id="btnReveal" hidden>Megnyitás mappában</button>
+        </div>
+        <details><summary>ffmpeg napló</summary><pre id="log"></pre></details>
+        <div class="note">Veszteségmentes vágásnál a vágás csak kulcskockánál kezdődhet pontosan, ezért a kezdőpontot a program a megelőző kulcskockára igazítja. A végpont bármelyik képkocka lehet.</div>
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    <span><kbd>Szóköz</kbd> lejátszás</span>
+    <span><kbd>←</kbd><kbd>→</kbd> képkocka</span>
+    <span><kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> 1 mp</span>
+    <span><kbd>↑</kbd><kbd>↓</kbd> kulcskocka</span>
+    <span><kbd>I</kbd>/<kbd>O</kbd> kezdet/vég</span>
+    <span><kbd>Enter</kbd> szakasz</span>
+    <span><kbd>Del</kbd> kijelölt szakasz törlése</span>
+    <span><kbd>R</kbd> forgatás jobbra</span>
+    <span><kbd>Ctrl</kbd>+<kbd>E</kbd> export</span>
+  </footer>
+</div>
+
+<div class="modal" id="browser">
+  <div class="box">
+    <div class="hd"><b>Videó megnyitása</b><button id="bClose">✕</button></div>
+    <div class="pathbar">
+      <button id="bUp" title="Fel">⬆</button>
+      <input type="text" id="bPath" spellcheck="false" placeholder="Mappa vagy teljes fájlútvonal…">
+      <button id="bGo">Ugrás</button>
+    </div>
+    <ul id="bList"></ul>
+    <div class="ft"><span class="muted" style="margin-right:auto;font-size:12px">Tipp: a fájl teljes útvonalát be is illesztheted, vagy a videót ráhúzhatod a programra indításkor (start szkript).</span><button id="bCancel">Mégse</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const api = async (url, opts) => {
+  const r = await fetch(url, opts);
+  const ct = r.headers.get("content-type") || "";
+  const data = ct.includes("json") ? await r.json() : null;
+  if (!r.ok) throw new Error((data && data.error) || r.statusText);
+  return data;
+};
+const post = (url, body) => api(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+const S = {
+  cfg: null, info: null, keys: [], fps: 30, dur: 0,
+  inT: 0, outT: 0, segs: [], activeSeg: -1, rot: 0,
+  fallback: false, curT: 0, zoom: 1, viewStart: 0, job: null, lastOutputs: [],
+};
+const video = $("#video"), img = $("#frameImg"), canvas = $("#tl"), ctx = canvas.getContext("2d");
+
+// ---------- time helpers
+function fmt(t, ms = true) {
+  if (!isFinite(t)) t = 0;
+  const neg = t < 0; t = Math.abs(t);
+  const h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, s = Math.floor(t) % 60;
+  const f = Math.round((t - Math.floor(t)) * 1000);
+  const base = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return (neg ? "-" : "") + (ms ? `${base}.${String(f === 1000 ? 999 : f).padStart(3, "0")}` : base);
+}
+function parseTime(str) {
+  str = String(str).trim().replace(",", ".");
+  if (!str) return NaN;
+  const parts = str.split(":").map(Number);
+  if (parts.some(isNaN)) return NaN;
+  return parts.reduce((acc, v) => acc * 60 + v, 0);
+}
+const fmtSize = (b) => b > 1e9 ? (b / 1e9).toFixed(2) + " GB" : (b / 1e6).toFixed(1) + " MB";
+const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+
+// ---------- keyframes
+function prevKey(t, strict = false) {
+  const k = S.keys; if (!k.length) return t;
+  let lo = 0, hi = k.length - 1, ans = k[0];
+  while (lo <= hi) { const mid = (lo + hi) >> 1; if (strict ? k[mid] < t - 1e-4 : k[mid] <= t + 1e-4) { ans = k[mid]; lo = mid + 1; } else hi = mid - 1; }
+  return ans;
+}
+function nextKey(t) {
+  const k = S.keys; if (!k.length) return t;
+  for (let lo = 0, hi = k.length - 1, ans = null; ; ) {
+    if (lo > hi) return ans ?? S.dur;
+    const mid = (lo + hi) >> 1;
+    if (k[mid] > t + 1e-4) { ans = k[mid]; hi = mid - 1; } else lo = mid + 1;
+  }
+}
+// keyframe times are absolute pts; the player starts at 0
+const keyOffset = () => S.info ? S.info.start_time : 0;
+
+// ---------- playback abstraction
+function now() { return S.fallback ? S.curT : video.currentTime; }
+let frameTimer = null;
+function seek(t) {
+  t = clamp(t, 0, S.dur);
+  if (S.fallback) {
+    S.curT = t;
+    clearTimeout(frameTimer);
+    const ft = Math.max(0, Math.min(t, S.dur - 1.5 / S.fps));
+    frameTimer = setTimeout(() => { img.src = `/api/frame?path=${encodeURIComponent(S.info.path)}&t=${ft}&w=1280`; }, 60);
+  } else {
+    video.currentTime = t;
+  }
+  updateTime();
+}
+function togglePlay() {
+  if (S.fallback || !S.info) return;
+  video.paused ? video.play() : video.pause();
+}
+video.addEventListener("play", () => ($("#btnPlay").textContent = "⏸"));
+video.addEventListener("pause", () => ($("#btnPlay").textContent = "▶"));
+video.addEventListener("timeupdate", updateTime);
+video.addEventListener("seeked", updateTime);
+video.addEventListener("error", () => { if (S.info && !S.fallback) enableFallback(); });
+video.addEventListener("loadedmetadata", () => {
+  // Some codecs (e.g. HEVC without hardware support) report 0x0 dimensions
+  if (!video.videoWidth) enableFallback();
+});
+function enableFallback() {
+  S.fallback = true;
+  video.hidden = true; img.hidden = false;
+  $("#fallbackNote").style.display = "block";
+  $("#btnPlay").disabled = true;
+  seek(now());
+}
+(function rafLoop() {
+  if (!video.paused) updateTime();
+  requestAnimationFrame(rafLoop);
+})();
+
+function updateTime() {
+  const t = now();
+  $("#timeNow").textContent = fmt(t);
+  $("#frameNo").textContent = S.info ? `#${Math.round(t * S.fps)}` : "";
+  // auto-scroll timeline when zoomed
+  const span = S.dur / S.zoom;
+  if (S.zoom > 1 && (t < S.viewStart || t > S.viewStart + span)) S.viewStart = clamp(t - span * 0.1, 0, S.dur - span);
+  draw();
+}
+
+// ---------- timeline
+function resizeCanvas() {
+  const r = canvas.getBoundingClientRect(), d = devicePixelRatio || 1;
+  canvas.width = Math.max(1, r.width * d); canvas.height = Math.max(1, r.height * d);
+  draw();
+}
+new ResizeObserver(resizeCanvas).observe($("#timeline"));
+function view() { const span = S.dur / S.zoom; return [S.viewStart, span]; }
+function tToX(t) { const [a, span] = view(); return (t - a) / span * canvas.width; }
+function xToT(x) { const [a, span] = view(); return a + x / canvas.width * span; }
+function draw() {
+  const W = canvas.width, H = canvas.height, d = devicePixelRatio || 1;
+  ctx.clearRect(0, 0, W, H);
+  if (!S.info || !S.dur) return;
+  const css = getComputedStyle(document.documentElement);
+  const c = (n) => css.getPropertyValue(n).trim();
+  // ruler
+  const [a, span] = view();
+  const steps = [0.1, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600];
+  const step = steps.find((s) => W / (span / s) > 90 * d) || 3600;
+  ctx.fillStyle = c("--muted"); ctx.font = `${10 * d}px ui-monospace, monospace`;
+  ctx.strokeStyle = c("--line"); ctx.lineWidth = 1;
+  for (let t = Math.ceil(a / step) * step; t <= a + span; t += step) {
+    const x = Math.round(tToX(t)) + 0.5;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 8 * d); ctx.stroke();
+    ctx.fillText(fmt(t, step < 1).replace(/^00:/, ""), x + 3 * d, 10 * d);
+  }
+  const top = 16 * d, h = H - top - 4 * d;
+  // keyframes
+  if (S.keys.length) {
+    ctx.fillStyle = c("--key");
+    const off = keyOffset();
+    const pxPer = W / span;
+    if (S.keys.length / S.zoom < W / (2 * d) || pxPer > 2) {
+      for (const k of S.keys) { const t = k - off; if (t < a || t > a + span) continue; ctx.fillRect(Math.round(tToX(t)), top + h - 8 * d, Math.max(1, d), 8 * d); }
+    }
+  }
+  // segments
+  S.segs.forEach((s, i) => {
+    const x1 = tToX(s.start), x2 = tToX(s.end);
+    ctx.fillStyle = c("--keep"); ctx.fillRect(x1, top, x2 - x1, h - 10 * d);
+    ctx.fillStyle = i === S.activeSeg ? "#fff" : c("--keep-edge");
+    ctx.fillRect(x1, top, 2 * d, h - 10 * d); ctx.fillRect(x2 - 2 * d, top, 2 * d, h - 10 * d);
+    ctx.fillStyle = "#fff"; ctx.font = `${11 * d}px system-ui`;
+    if (x2 - x1 > 20 * d) ctx.fillText(String(i + 1), x1 + 5 * d, top + 13 * d);
+  });
+  // selection
+  if (S.outT > S.inT) {
+    const x1 = tToX(S.inT), x2 = tToX(S.outT);
+    ctx.fillStyle = c("--sel"); ctx.fillRect(x1, top + h - 10 * d, x2 - x1, 6 * d);
+    ctx.fillStyle = "#ffc440";
+    ctx.fillRect(x1 - d, top, 2 * d, h); ctx.fillRect(x2 - d, top, 2 * d, h);
+  }
+  // playhead
+  const px = tToX(now());
+  ctx.fillStyle = "#ff4d4d"; ctx.fillRect(px - d, 0, 2 * d, H);
+  ctx.beginPath(); ctx.moveTo(px - 5 * d, 0); ctx.lineTo(px + 5 * d, 0); ctx.lineTo(px, 6 * d); ctx.fill();
+}
+let dragging = false;
+const tl = $("#timeline");
+function tlSeek(e) { const r = canvas.getBoundingClientRect(); seek(xToT((e.clientX - r.left) * (devicePixelRatio || 1))); }
+tl.addEventListener("pointerdown", (e) => { if (!S.info) return; dragging = true; tl.setPointerCapture(e.pointerId); tlSeek(e); });
+tl.addEventListener("pointermove", (e) => dragging && tlSeek(e));
+tl.addEventListener("pointerup", () => (dragging = false));
+tl.addEventListener("wheel", (e) => {
+  if (!S.info) return; e.preventDefault();
+  const r = canvas.getBoundingClientRect(), x = (e.clientX - r.left) * (devicePixelRatio || 1);
+  const tAt = xToT(x);
+  setZoom(S.zoom * (e.deltaY < 0 ? 1.25 : 0.8), tAt, x / canvas.width);
+}, { passive: false });
+function setZoom(z, anchorT = now(), frac = 0.5) {
+  S.zoom = clamp(z, 1, 200);
+  const span = S.dur / S.zoom;
+  S.viewStart = clamp(anchorT - span * frac, 0, Math.max(0, S.dur - span));
+  $("#zoom").value = Math.round(S.zoom);
+  draw();
+}
+$("#zoom").addEventListener("input", (e) => setZoom(+e.target.value));
+
+// ---------- marks & segments
+function setIn(t = now()) {
+  if ($("#snap").checked && S.keys.length) t = Math.max(0, prevKey(t + keyOffset()) - keyOffset());
+  S.inT = t; if (S.outT <= S.inT) S.outT = S.dur;
+  renderSel();
+}
+function setOut(t = now()) {
+  S.outT = clamp(t, 0, S.dur); if (S.inT >= S.outT) S.inT = 0;
+  renderSel();
+}
+function renderSel() {
+  $("#selInfo").textContent = S.info ? `${fmt(S.inT)} → ${fmt(S.outT)} (${fmt(S.outT - S.inT)})` : "";
+  draw();
+}
+function addSeg() {
+  if (S.outT - S.inT < 0.01) return;
+  S.segs.push({ start: S.inT, end: S.outT });
+  S.segs.sort((x, y) => x.start - y.start);
+  S.activeSeg = S.segs.findIndex((s) => s.start === S.inT && s.end === S.outT);
+  renderSegs();
+}
+function renderSegs() {
+  const box = $("#segList");
+  box.innerHTML = "";
+  if (!S.segs.length) {
+    box.innerHTML = `<div class="empty">Még nincs szakasz. Jelöld ki a kezdetet <kbd>I</kbd> és a véget <kbd>O</kbd>, majd <kbd>Enter</kbd>. Szakasz nélkül a kijelölés (alapból a teljes videó) kerül exportálásra.</div>`;
+  }
+  S.segs.forEach((s, i) => {
+    const el = document.createElement("div");
+    el.className = "seg" + (i === S.activeSeg ? " active" : "");
+    el.innerHTML = `<div class="n">${i + 1}</div>
+      <div class="times"><input class="mono" value="${fmt(s.start)}" title="Kezdet"><input class="mono" value="${fmt(s.end)}" title="Vég"></div>
+      <div class="acts"><button title="Ugrás a kezdetére">▶</button><button title="Kijelölés betöltése">✎</button><button title="Törlés">✕</button></div>
+      <div class="dur mono">${fmt(s.end - s.start)}</div>`;
+    const [iS, iE] = el.querySelectorAll("input");
+    const commit = () => {
+      let a = parseTime(iS.value), b = parseTime(iE.value);
+      if (isNaN(a) || isNaN(b) || b <= a) { iS.value = fmt(s.start); iE.value = fmt(s.end); return; }
+      if ($("#snap").checked && S.keys.length) a = Math.max(0, prevKey(a + keyOffset()) - keyOffset());
+      s.start = clamp(a, 0, S.dur); s.end = clamp(b, 0, S.dur);
+      S.segs.sort((x, y) => x.start - y.start); renderSegs();
+    };
+    iS.addEventListener("change", commit); iE.addEventListener("change", commit);
+    const [bGo, bEdit, bDel] = el.querySelectorAll("button");
+    bGo.onclick = () => { S.activeSeg = i; seek(s.start); renderSegs(); };
+    bEdit.onclick = () => { S.activeSeg = i; S.inT = s.start; S.outT = s.end; renderSel(); renderSegs(); };
+    bDel.onclick = () => { S.segs.splice(i, 1); S.activeSeg = -1; renderSegs(); };
+    el.addEventListener("click", (e) => { if (e.target.tagName === "DIV") { S.activeSeg = i; renderSegs(); } });
+    box.appendChild(el);
+  });
+  $("#btnClearSegs").disabled = !S.segs.length;
+  $("#btnInvert").disabled = !S.segs.length;
+  draw();
+}
+$("#btnClearSegs").onclick = () => { if (confirm("Törlöd az összes szakaszt?")) { S.segs = []; S.activeSeg = -1; renderSegs(); } };
+$("#btnInvert").onclick = () => {
+  const merged = [];
+  for (const s of [...S.segs].sort((a, b) => a.start - b.start)) {
+    const last = merged[merged.length - 1];
+    if (last && s.start <= last.end) last.end = Math.max(last.end, s.end); else merged.push({ ...s });
+  }
+  const inv = []; let cur = 0;
+  for (const s of merged) { if (s.start - cur > 0.01) inv.push({ start: cur, end: s.start }); cur = s.end; }
+  if (S.dur - cur > 0.01) inv.push({ start: cur, end: S.dur });
+  const snap = $("#snap").checked && S.keys.length;
+  S.segs = inv.map((s) => ({ start: snap ? Math.max(0, prevKey(s.start + keyOffset()) - keyOffset()) : s.start, end: s.end }));
+  S.activeSeg = -1; renderSegs();
+};
+
+// ---------- rotation
+function setRot(r) {
+  S.rot = ((r % 360) + 360) % 360;
+  const sideways = S.rot === 90 || S.rot === 270;
+  for (const m of [video, img]) m.style.transform = `rotate(${S.rot}deg)` + (sideways ? " scale(var(--fit,1))" : "");
+  fitRotated();
+  document.querySelectorAll("[data-rot]").forEach((b) => b.classList.toggle("on", +b.dataset.rot === (S.rot > 180 ? S.rot - 360 : S.rot) && S.rot !== 0));
+  $("#rotBadge").style.display = S.rot ? "block" : "none";
+  $("#rotBadge").textContent = `Forgatás: ${S.rot}° jobbra`;
+  updateContainerNote(); updateOutPath();
+}
+function fitRotated() {
+  const stage = $("#stage"), el = S.fallback ? img : video;
+  const sideways = S.rot === 90 || S.rot === 270;
+  if (!sideways || !el.clientWidth) { stage.style.setProperty("--fit", 1); return; }
+  // the rotated box is clientHeight wide and clientWidth tall
+  stage.style.setProperty("--fit", Math.min(stage.clientWidth / el.clientHeight, stage.clientHeight / el.clientWidth));
+}
+{ const ro = new ResizeObserver(fitRotated); ro.observe($("#stage")); ro.observe(video); ro.observe(img); }
+document.querySelectorAll("[data-rot]").forEach((b) => b.onclick = () => {
+  const v = +b.dataset.rot;
+  if (v === 0) setRot(0); else if (v === 180) setRot(S.rot === 180 ? 0 : 180); else setRot(S.rot + v);
+});
+
+// ---------- export
+function srcExt() { return S.info ? (S.info.name.match(/\.[^.]+$/) || [".mp4"])[0].toLowerCase() : ".mp4"; }
+function outExt() {
+  const sel = $("#container").value;
+  if (sel) return sel;
+  const e = srcExt();
+  if (S.rot && !S.cfg.rotation_containers.includes(e)) return ".mp4";
+  return e;
+}
+let outEdited = false;
+$("#outPath").addEventListener("input", () => (outEdited = true));
+function updateOutPath() {
+  if (!S.info) return;
+  const ext = outExt();
+  let p = $("#outPath").value;
+  if (!outEdited || !p) {
+    p = S.info.path.replace(/\.[^.\\/]+$/, "") + "_vagott" + ext;
+  } else {
+    p = p.replace(/\.[^.\\/]+$/, "") + ext;
+  }
+  $("#outPath").value = p;
+}
+$("#container").addEventListener("change", () => { updateOutPath(); updateContainerNote(); });
+function updateContainerNote() {
+  const n = $("#rotNote");
+  const ext = outExt();
+  if (S.rot && !S.cfg?.rotation_containers.includes(ext)) {
+    n.className = "note warn"; n.textContent = `A ${ext} formátum nem tárol forgatást – válassz MP4-et vagy MOV-ot.`;
+  } else {
+    n.className = "note"; n.textContent = "A forgatás a fájl megjelenítési mátrixába kerül, a képpontok változatlanok. MP4/MOV formátumban működik; a modern lejátszók (VLC, mpv, böngészők, telefonok, Premiere, DaVinci) mind figyelembe veszik.";
+  }
+}
+async function startExport() {
+  if (!S.info || S.job) return;
+  let segs = S.segs.map((s) => [s.start, s.end]);
+  if (!segs.length) segs = [[S.inT, S.outT]];
+  const output = $("#outPath").value.trim();
+  const body = {
+    path: S.info.path, segments: segs, rotate: S.rot, output,
+    mode: $("#mode").value, audio: $("#keepAudio").checked, subs: $("#keepSubs").checked,
+  };
+  setJobUi("running", "Indul…", 0);
+  try {
+    const { id } = await post("/api/export", body);
+    S.job = id; pollJob();
+  } catch (e) { setJobUi("error", e.message, 0); }
+}
+async function pollJob() {
+  if (!S.job) return;
+  try {
+    const j = await api(`/api/job/${S.job}`);
+    $("#log").textContent = j.log;
+    setJobUi(j.state, j.state === "running" ? `${j.message} – ${(j.progress * 100).toFixed(0)}%` :
+      j.state === "done" ? `${j.message} (${j.elapsed} mp)\n${j.outputs.join("\n")}` : j.message, j.progress);
+    if (j.state === "running") return setTimeout(pollJob, 400);
+    S.lastOutputs = j.outputs; S.job = null;
+    $("#btnReveal").hidden = !j.outputs.length;
+  } catch (e) { setJobUi("error", e.message, 0); S.job = null; }
+}
+function setJobUi(state, msg, p) {
+  $("#jobMsg").textContent = msg;
+  $("#jobMsg").className = state === "error" ? "err" : state === "done" ? "ok" : "muted";
+  $("#jobMsg").style.whiteSpace = "pre-line";
+  $("#progress > div").style.width = `${(p * 100).toFixed(1)}%`;
+  $("#btnCancel").hidden = state !== "running";
+  $("#btnExport").disabled = state === "running" || !S.info;
+  if (state === "running") $("#btnReveal").hidden = true;
+}
+$("#btnExport").onclick = startExport;
+$("#btnCancel").onclick = () => S.job && post(`/api/job/${S.job}/cancel`, {});
+$("#btnReveal").onclick = () => S.lastOutputs[0] && post("/api/reveal", { path: S.lastOutputs[0] }).catch(() => {});
+
+// ---------- open file
+async function openFile(path) {
+  let info;
+  try { info = await api(`/api/probe?path=${encodeURIComponent(path)}`); }
+  catch (e) { alert("Nem sikerült megnyitni:\n" + e.message); return; }
+  Object.assign(S, { info, keys: [], fps: info.video.fps || 30, dur: info.duration, inT: 0, outT: info.duration,
+    segs: [], activeSeg: -1, fallback: false, curT: 0, zoom: 1, viewStart: 0 });
+  outEdited = false;
+  $("#placeholder").hidden = true;
+  $("#fallbackNote").style.display = "none";
+  img.hidden = true; video.hidden = false;
+  video.src = `/media?path=${encodeURIComponent(path)}`;
+  $("#fileName").textContent = info.name; $("#fileName").classList.remove("muted"); $("#fileName").title = info.path;
+  document.title = `${info.name} – Videóvágó`;
+  const v = info.video;
+  const audio = info.streams.filter((s) => s.type === "audio");
+  const chips = [
+    ["", `${v.width}×${v.height}`], ["", `${(+v.fps).toFixed(v.fps % 1 ? 3 : 0)} fps`],
+    ["", (v.codec || "").toUpperCase() + (v.pix_fmt && /10|12/.test(v.pix_fmt) ? " 10 bit" : "")],
+    ["", audio.length ? `${audio.length}× hang (${[...new Set(audio.map((a) => a.codec))].join(", ")})` : "nincs hang"],
+    ["", fmtSize(info.size)], ["", fmt(info.duration, false)],
+  ];
+  if (v.rotation) chips.push(["", `forgatva: ${-v.rotation}°`]);
+  $("#chips").innerHTML = chips.map(([, t]) => `<span class="chip"><b>${t}</b></span>`).join("");
+  $("#timeTotal").textContent = "/ " + fmt(info.duration);
+  document.querySelectorAll("#controls button, #btnExport").forEach((b) => (b.disabled = false));
+  setRot(0); renderSegs(); renderSel(); updateOutPath(); setJobUi("idle", "", 0);
+  $("#kfInfo").textContent = "Kulcskockák beolvasása…";
+  const forPath = path;
+  try {
+    const { keyframes } = await api(`/api/keyframes?path=${encodeURIComponent(path)}`);
+    if (S.info?.path !== info.path || forPath !== path) return;
+    S.keys = keyframes;
+    const avg = keyframes.length > 1 ? (keyframes[keyframes.length - 1] - keyframes[0]) / (keyframes.length - 1) : 0;
+    $("#kfInfo").textContent = `${keyframes.length} kulcskocka` + (avg ? `, átlag ${avg.toFixed(2)} mp-enként` : "");
+    draw();
+  } catch (e) { $("#kfInfo").textContent = "Kulcskockák nem olvashatók: " + e.message; }
+}
+
+// file browser
+const B = { path: "", sel: -1, entries: [] };
+let typedSince = 0;
+$("#bPath").addEventListener("input", () => typedSince++);
+async function browse(path) {
+  const typed = typedSince;
+  try {
+    const r = await api(`/api/browse?path=${encodeURIComponent(path || "")}`);
+    B.path = r.path; B.parent = r.parent; B.entries = r.entries; B.sel = -1;
+    if (typed === typedSince) $("#bPath").value = r.path;
+    $("#bUp").disabled = !r.parent;
+    const ul = $("#bList"); ul.innerHTML = "";
+    if (!r.entries.length) ul.innerHTML = `<li class="muted">Nincs itt mappa vagy videófájl.</li>`;
+    r.entries.forEach((e) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${e.dir ? "📁" : "🎞️"} </span><span class="sz">${e.dir ? "" : fmtSize(e.size)}</span>`;
+      li.firstChild.append(e.name);
+      li.onclick = () => (e.dir ? browse(e.path) : (closeBrowser(), openFile(e.path)));
+      ul.appendChild(li);
+    });
+  } catch (e) { alert(e.message); }
+}
+function openBrowser() { $("#browser").classList.add("open"); browse(S.info ? S.info.path.replace(/[\\/][^\\/]*$/, "") : B.path); }
+function closeBrowser() { $("#browser").classList.remove("open"); }
+$("#btnOpen").onclick = openBrowser;
+$("#bClose").onclick = $("#bCancel").onclick = closeBrowser;
+$("#bUp").onclick = () => B.parent && browse(B.parent);
+const goPath = () => {
+  const p = $("#bPath").value.trim().replace(/^"(.*)"$/, "$1");
+  if (/\.[a-z0-9]{2,5}$/i.test(p)) { closeBrowser(); openFile(p); } else browse(p);
+};
+$("#bGo").onclick = goPath;
+$("#bPath").addEventListener("keydown", (e) => e.key === "Enter" && goPath());
+
+// ---------- buttons & keys
+$("#btnPlay").onclick = togglePlay;
+$("#btnPrevFrame").onclick = () => step(-1);
+$("#btnNextFrame").onclick = () => step(1);
+$("#btnPrevKey").onclick = () => seek(Math.max(0, prevKey(now() + keyOffset(), true) - keyOffset()));
+$("#btnNextKey").onclick = () => seek(nextKey(now() + keyOffset()) - keyOffset());
+$("#btnIn").onclick = () => setIn();
+$("#btnOut").onclick = () => setOut();
+$("#btnAdd").onclick = addSeg;
+function step(n) { if (!S.fallback) video.pause(); seek(now() + n / S.fps + (n > 0 ? 1e-4 : 0)); }
+
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") { e.preventDefault(); openBrowser(); return; }
+  if (e.key === "Escape") return closeBrowser();
+  if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName) || $("#browser").classList.contains("open") || !S.info) return;
+  const k = e.key;
+  if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === "e") { e.preventDefault(); startExport(); return; }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const map = {
+    " ": togglePlay,
+    ArrowLeft: () => (e.shiftKey ? seek(now() - 1) : step(-1)),
+    ArrowRight: () => (e.shiftKey ? seek(now() + 1) : step(1)),
+    ArrowUp: () => $("#btnPrevKey").click(),
+    ArrowDown: () => $("#btnNextKey").click(),
+    i: () => setIn(), I: () => setIn(), o: () => setOut(), O: () => setOut(),
+    Enter: addSeg, Home: () => seek(0), End: () => seek(S.dur),
+    r: () => setRot(S.rot + 90), R: () => setRot(S.rot - 90),
+    Delete: () => { if (S.activeSeg >= 0) { S.segs.splice(S.activeSeg, 1); S.activeSeg = -1; renderSegs(); } },
+    "+": () => setZoom(S.zoom * 1.5), "-": () => setZoom(S.zoom / 1.5),
+  };
+  if (map[k]) { e.preventDefault(); if (document.activeElement?.tagName === "BUTTON") document.activeElement.blur(); map[k](); }
+});
+
+// ---------- init
+(async () => {
+  try {
+    S.cfg = await api("/api/config");
+    if (S.cfg.startup_file) openFile(S.cfg.startup_file);
+  } catch (e) {
+    $("#placeholder").innerHTML = `<div style="color:var(--danger)">Nem érhető el a háttérprogram: ${e.message}</div>`;
+  }
+})();
+</script>
+</body>
+</html>
