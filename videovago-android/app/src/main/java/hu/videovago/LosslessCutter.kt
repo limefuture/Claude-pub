@@ -62,25 +62,29 @@ class LosslessCutter(
         rotationCw: Int,
         keepAudio: Boolean,
         separate: Boolean,
+        outputName: String? = null,
         onProgress: (Float, String) -> Unit,
     ): List<Uri> {
         val segs = segments.filter { it.endUs - it.startUs > 1_000 }.sortedBy { it.startUs }
         require(segs.isNotEmpty()) { "Nincs kijelölt szakasz." }
         val total = segs.sumOf { it.endUs - it.startUs }.coerceAtLeast(1)
-        val base = info.name.substringBeforeLast('.').ifBlank { "video" }
         val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        // MediaStore adds " (1)" etc. itself if the name is taken.
+        val base = outputName?.trim()?.removeSuffix(".mp4")?.replace(Regex("""[\\/:*?"<>|]"""), "_")
+            ?.takeIf { it.isNotBlank() }
+            ?: (info.name.substringBeforeLast('.').ifBlank { "video" } + "_vagott_" + stamp)
         val outs = mutableListOf<Uri>()
         if (separate && segs.size > 1) {
             var done = 0L
             segs.forEachIndexed { i, s ->
                 val label = "Szakasz ${i + 1}/${segs.size} mentése"
-                outs += writeFile("${base}_vagott_${stamp}_${i + 1}.mp4", listOf(s), rotationCw, keepAudio) { us ->
+                outs += writeFile("${base}_${i + 1}.mp4", listOf(s), rotationCw, keepAudio) { us ->
                     onProgress((done + us).toFloat() / total, label)
                 }
                 done += s.endUs - s.startUs
             }
         } else {
-            outs += writeFile("${base}_vagott_$stamp.mp4", segs, rotationCw, keepAudio) { us ->
+            outs += writeFile("$base.mp4", segs, rotationCw, keepAudio) { us ->
                 onProgress(us.toFloat() / total, "Mentés")
             }
         }

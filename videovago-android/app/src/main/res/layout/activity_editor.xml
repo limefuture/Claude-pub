@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <!-- video -->
+    <FrameLayout
+        android:id="@+id/videoBox"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipChildren="true">
+
+        <TextureView
+            android:id="@+id/texture"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+
+        <TextView
+            android:id="@+id/txtLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="Betöltés…"
+            android:textColor="@color/muted"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/rotBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="10dp"
+            android:background="#B3000000"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="3dp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- seek bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:id="@+id/txtPos"
+            style="@style/TimeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="60dp"
+            android:text="0:00.00" />
+
+        <hu.videovago.SeekStripView
+            android:id="@+id/seek"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/txtDur"
+            style="@style/TimeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0:00.00" />
+    </LinearLayout>
+
+    <!-- transport -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="6dp">
+
+        <TextView android:id="@+id/btnSetStart" style="@style/BraceBtn" android:layout_width="0dp" android:layout_weight="1" android:contentDescription="Kezdet ide" android:text="{" />
+        <TextView android:id="@+id/btnSetEnd" style="@style/BraceBtn" android:layout_width="0dp" android:layout_weight="1" android:contentDescription="Vég ide" android:text="}" />
+        <ImageButton android:id="@+id/btnToStart" style="@style/IconBtn" android:layout_width="0dp" android:layout_weight="1" android:contentDescription="Ugrás az elejére" android:src="@drawable/ic_skip_prev" />
+        <ImageButton android:id="@+id/btnPlay" style="@style/IconBtn" android:layout_width="0dp" android:layout_weight="1" android:contentDescription="Lejátszás" android:src="@drawable/ic_play" />
+        <ImageButton android:id="@+id/btnVolume" style="@style/IconBtn" android:layout_width="0dp" android:layout_weight="1" android:contentDescription="Előnézet hangja" android:src="@drawable/ic_volume" />
+        <ImageButton android:id="@+id/btnRotate" style="@style/IconBtn" android:layout_width="0dp" android:layout_weight="1" android:contentDescription="Forgatás 90°-kal" android:src="@drawable/ic_rotate" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider" />
+
+    <!-- segments header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="8dp">
+
+        <TextView
+            android:id="@+id/txtHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Eltávolítandó részek"
+            android:textColor="@color/text"
+            android:textSize="16sp" />
+
+        <ImageButton
+            android:id="@+id/btnInfo"
+            style="@style/IconBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="9dp"
+            android:contentDescription="Súgó"
+            android:src="@drawable/ic_info" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton android:id="@+id/btnAdd" style="@style/IconBtn.Teal" android:layout_width="40dp" android:layout_height="40dp" android:padding="9dp" android:contentDescription="Rész hozzáadása" android:src="@drawable/ic_add" />
+        <ImageButton android:id="@+id/btnDelete" style="@style/IconBtn" android:layout_width="40dp" android:layout_height="40dp" android:padding="9dp" android:contentDescription="Kijelölt rész törlése" android:src="@drawable/ic_delete" />
+        <ImageButton android:id="@+id/btnAudio" style="@style/IconBtn" android:layout_width="40dp" android:layout_height="40dp" android:padding="9dp" android:contentDescription="Hang eltávolítása a kimenetből" android:src="@drawable/ic_volume_off" />
+        <ImageButton android:id="@+id/btnWave" style="@style/IconBtn.Teal" android:layout_width="40dp" android:layout_height="40dp" android:padding="9dp" android:contentDescription="Hullámforma" android:src="@drawable/ic_wave" />
+        <ImageButton android:id="@+id/btnZoomOut" style="@style/IconBtn" android:layout_width="40dp" android:layout_height="40dp" android:padding="9dp" android:contentDescription="Kicsinyítés" android:src="@drawable/ic_zoom_out" />
+        <ImageButton android:id="@+id/btnZoomIn" style="@style/IconBtn" android:layout_width="40dp" android:layout_height="40dp" android:padding="9dp" android:contentDescription="Nagyítás" android:src="@drawable/ic_zoom_in" />
+    </LinearLayout>
+
+    <!-- filmstrip -->
+    <hu.videovago.FilmstripView
+        android:id="@+id/strip"
+        android:layout_width="match_parent"
+        android:layout_height="104dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp" />
+
+    <!-- edge times -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <TextView android:id="@+id/txtStart" style="@style/TimeText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="58dp" android:text="--:--" />
+        <ImageButton android:id="@+id/btnStartPrev" style="@style/IconBtn" android:layout_width="40dp" android:layout_height="40dp" android:padding="8dp" android:contentDescription="Kezdet vissza" android:src="@drawable/ic_chevron_left" />
+        <ImageButton android:id="@+id/btnStartNext" style="@style/IconBtn" android:layout_width="40dp" android:layout_height="40dp" android:padding="8dp" android:contentDescription="Kezdet előre" android:src="@drawable/ic_chevron_right" />
+
+        <TextView
+            android:id="@+id/txtTotal"
+            style="@style/TimeText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="Összesen: 0:00.0" />
+
+        <ImageButton android:id="@+id/btnEndPrev" style="@style/IconBtn" android:layout_width="40dp" android:layout_height="40dp" android:padding="8dp" android:contentDescription="Vég vissza" android:src="@drawable/ic_chevron_left" />
+        <ImageButton android:id="@+id/btnEndNext" style="@style/IconBtn" android:layout_width="40dp" android:layout_height="40dp" android:padding="8dp" android:contentDescription="Vég előre" android:src="@drawable/ic_chevron_right" />
+        <TextView android:id="@+id/txtEnd" style="@style/TimeText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="end" android:minWidth="58dp" android:text="--:--" />
+    </LinearLayout>
+
+    <!-- output settings -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="9dp"
+            android:background="@drawable/bg_outline"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="4dp">
+
+            <EditText
+                android:id="@+id/editName"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="fájlnév"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:textColor="@color/text"
+                android:textSize="17sp" />
+
+            <ImageButton
+                android:id="@+id/btnSettings"
+                style="@style/IconBtn"
+                android:contentDescription="Kimeneti beállítások"
+                android:src="@drawable/ic_tune" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:background="@color/bg"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:text="Kimeneti beállítások"
+            android:textColor="@color/muted"
+            android:textSize="12sp" />
+    </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider" />
+
+    <!-- bottom bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <ImageButton android:id="@+id/btnClose" style="@style/IconBtn" android:contentDescription="Bezárás" android:src="@drawable/ic_close" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton android:id="@+id/btnMore" style="@style/IconBtn" android:contentDescription="Továbbiak" android:src="@drawable/ic_more" />
+        <ImageButton android:id="@+id/btnExport" style="@style/IconBtn" android:layout_marginStart="12dp" android:contentDescription="Mentés" android:src="@drawable/ic_check" />
+    </LinearLayout>
+</LinearLayout>

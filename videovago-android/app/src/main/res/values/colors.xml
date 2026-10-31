@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg">#111317</color>
-    <color name="panel">#1A1D23</color>
-    <color name="panel2">#22262E</color>
-    <color name="line">#2E333D</color>
-    <color name="text">#E7E9EE</color>
-    <color name="muted">#8B93A3</color>
-    <color name="accent">#4F9CFF</color>
-    <color name="accent_dark">#2F6FD1</color>
-    <color name="ok">#3FCF8E</color>
-    <color name="danger">#FF5D5D</color>
-    <color name="icon_bg">#16263D</color>
+    <color name="bg">#FAF9FC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="text">#1C1B1F</color>
+    <color name="muted">#5F5C66</color>
+    <color name="disabled">#B3B0B8</color>
+    <color name="line">#C9C5D0</color>
+    <color name="divider">#D8D5DD</color>
+    <color name="teal">#00695C</color>
+    <color name="teal_dark">#004D40</color>
+    <color name="teal_light">#9CC5BF</color>
+    <color name="track">#E7E1EE</color>
+    <color name="remove">#C62828</color>
+    <color name="card">#F4EFF7</color>
+    <color name="card_stroke">#D6CCDC</color>
+    <color name="dialog">#E9E7EF</color>
+    <color name="icon_bg">#004D40</color>
 </resources>

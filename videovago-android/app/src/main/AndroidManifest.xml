@@ -31,5 +31,12 @@
                 <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".EditorActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:exported="false"
+            android:theme="@style/EditorTheme"
+            android:windowSoftInputMode="adjustPan|stateHidden" />
     </application>
 </manifest>
