@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Filmkocka, középen függőleges vágásvonallal -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#4F9CFF"
+        android:pathData="M32,38h19v32h-19z M57,38h19v32h-19z" />
+    <path
+        android:fillColor="#16263D"
+        android:pathData="M35,41h4v4h-4z M44,41h4v4h-4z M35,63h4v4h-4z M44,63h4v4h-4z M60,41h4v4h-4z M69,41h4v4h-4z M60,63h4v4h-4z M69,63h4v4h-4z" />
+    <path
+        android:fillColor="#FFC440"
+        android:pathData="M53,30h2v48h-2z" />
+</vector>
