@@ -19,24 +19,31 @@ Az újabb buildek ugyanazzal a kulccsal vannak aláírva, így a régi fölé te
 
 ## Használat
 
-- **Megnyitás** gomb, vagy a Galériában egy videónál **Megosztás → Videóvágó**.
-- Az idővonalat húzással tekerheted, két ujjal (vagy a −/+ gombbal) nagyíthatod.
-- `◀|` / `|▶` léptet egy képkockát, `⏮K` / `K⏭` a kulcskockákra ugrik.
-- **[ Kezdet** / **Vég ]** a kijelölés, **+ Szakasz** felveszi. Több szakaszt is felvehetsz,
-  ezeket egy fájlba fűzi vagy külön fájlokba menti. A **Megfordítás** gomb a szakaszok közötti
-  részeket tartja meg (így lehet részeket kivágni).
-- Forgatás: ↺ 90°, ↻ 90°, 180°.
-- **Exportálás**: a kész MP4 a **Filmek/Videovago** mappába kerül, a Galériában is megjelenik.
-  Az eredeti videóhoz nem nyúl.
+1. Koppints az ollós csempére (vagy a Galériában: **Megosztás → Videóvágó**), és válassz módot:
+   - **Vágás**: egy részt tartasz meg, a többi eltűnik.
+   - **Több vágás**: több felesleges részt jelölsz ki, a többi összefűzve marad meg.
+2. A szerkesztőben:
+   - Fent a videó, alatta a **csúszka** (a törölt részek halványabbak, a határokat kis jelek mutatják).
+   - `{` / `}`: a kijelölt rész eleje/vége a lejátszófej helyére kerül. `|◀` a rész elejére ugrik,
+     a hangszóró az előnézet hangját némítja, a forgatás gomb 90°-ot fordít (hosszan nyomva visszaállítja).
+   - **Képsáv**: a videó bélyegképei a hang hullámformájával. Több vágás módban a törölt részek pirosak,
+     a kijelöltnek húzható fogantyúi vannak; a koppintás kijelöl. Két ujjal vagy a nagyítókkal nagyítható.
+   - A fejléc gombjai: `+` új rész, kuka (törlés), áthúzott hangszóró (a kimenet hang nélkül),
+     hullámforma be/ki, nagyítás.
+   - Alatta a kijelölt rész eleje és vége a `<` `>` finomhangoló gombokkal, középen a kész videó hossza.
+   - **Kimeneti beállítások**: a fájlnév, a beállítás ikonnal a hang és a külön fájlokba mentés.
+   - Lent: ✕ kilépés, ⋮ (eredmény előnézete, videó adatai, súgó), ✓ **mentés**.
+3. A kész MP4 a **Filmek/Videovago** mappába kerül, a végén le is játszhatod vagy megoszthatod.
 
 ## Hogyan működik
 
 - **Vágás:** az Android saját `MediaExtractor` és `MediaMuxer` osztálya a tömörített
   képkockákat egy az egyben másolja át (ugyanaz, amit az asztali változatban az `ffmpeg -c copy`
   csinál). Ezért gyors: a sebességet csak a tároló írási sebessége korlátozza.
-- **Kulcskockák:** a vágás eleje csak kulcskockára eshet pontosan. Az app beolvassa a
-  kulcskockák helyét (az idővonalon szürke jelek), és a kezdőpontot a megelőzőre igazítja.
-  A vég bármelyik képkocka lehet.
+- **Kulcskockák:** a megtartott rész csak kulcskockánál kezdődhet. Az app beolvassa a
+  kulcskockák helyét, és ezeket a széleket (Vágás módban a kezdet, Több vágás módban a törölt rész
+  vége) a megelőző kulcskockára igazítja, így semmi nem vész el, amit meg akartál tartani. Ezeknél a
+  széleknél a `<` `>` kulcskockánként lép, a többinél képkockánként.
 - **Forgatás:** az MP4 megjelenítési mátrixába kerül (`setOrientationHint`), a képpontok
   változatlanok. A telefonok, a VLC, a böngészők és a vágóprogramok figyelembe veszik.
 - **Előnézet:** a telefon hardveres dekóderével megy, így a 4K 60 fps is folyamatos.
