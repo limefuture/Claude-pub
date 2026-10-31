@@ -167,9 +167,9 @@ const MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST',
 // R = right edge of the "VANDALISM" lettering, top = logo top (star tip), gap = line-up
 // top below the date circle centre (in L). Info = V✦ block: bottom-left, or top-left on 16:9.
 const FORMATS=[
- {id:'16x9',W:1920,H:1080,name:'16:9',use:'Facebook esemény, YouTube, kijelző',L:.40,R:.913,top:.144,gap:.29,lu:.13,maxB:.93,ix:.047,iy:.06,top0:true,is:.0156,fx:.5,fy:.5},
- {id:'4x5',W:1080,H:1350,name:'4:5',use:'Instagram poszt',L:.57,R:.91,top:.093,gap:.48,lu:.155,maxB:.84,ix:.208,iy:.937,is:.027,fx:.3,fy:.5},
- {id:'9x16',W:1080,H:1920,name:'9:16',use:'Story, Reels',L:.66,R:.914,top:.182,gap:.46,lu:.135,maxB:.86,ix:.213,iy:.943,is:.027,fx:.3,fy:.5}];
+ {id:'16x9',W:1920,H:1080,name:'16:9',use:'Facebook esemény, YouTube, kijelző',L:.40,R:.913,top:.144,gap:.24,lu:.17,maxB:.95,ix:.047,iy:.06,top0:true,is:.0156,fx:.5,fy:.5},
+ {id:'4x5',W:1080,H:1350,name:'4:5',use:'Instagram poszt',L:.57,R:.91,top:.093,gap:.45,lu:.2,maxB:.84,ix:.208,iy:.937,is:.027,fx:.3,fy:.5},
+ {id:'9x16',W:1080,H:1920,name:'9:16',use:'Story, Reels',L:.66,R:.914,top:.182,gap:.44,lu:.18,maxB:.86,ix:.213,iy:.943,is:.027,fx:.3,fy:.5}];
 FORMATS.forEach(f=>{f.fx0=f.fx;f.fy0=f.fy;});
 const WORD_AR=1426.18/4764.51, MONO_AR=1172/832;
 
@@ -280,8 +280,8 @@ function draw(f,cv){
   for(let it=0;it<60;it++){
    y.font=`500 ${size}px ${GROT}`;track(y,-.02*size);
    const mw=Math.max(...F.names.map(n=>y.measureText(n).width));
-   if(mw>1.1*L){size*=1.1*L/mw;continue;}
-   step=1.32*size;b0=cy+f.gap*L+.72*size;
+   if(mw>1.25*L){size*=1.25*L/mw;continue;}
+   step=1.25*size;b0=cy+f.gap*L+.72*size;
    if(b0+(F.names.length-1)*step+.05*size<=f.maxB*H||size<.02*L)break;
    size*=.95;}
   y.textAlign='right';y.textBaseline='alphabetic';
