@@ -648,12 +648,13 @@ class EditorActivity : Activity() {
         }
         box.addView(chkAudio)
         box.addView(chkSeparate)
+        val rot = rotation
         box.addView(TextView(this).apply {
             setTextColor(getColor(R.color.muted))
             textSize = 13f
             setPadding(0, (10 * d).toInt(), 0, 0)
             text = "Formátum: MP4, az eredeti kódolt képkockák másolata (újrakódolás nélkül)\n" +
-                "Forgatás: " + (if (rotation == 0) "nincs" else "$rotation° jobbra") + "\n" +
+                "Forgatás: " + (if (rot == 0) "nincs" else "$rot° jobbra") + "\n" +
                 "Mentés helye: Filmek/Videovago"
         })
         AlertDialog.Builder(this)
