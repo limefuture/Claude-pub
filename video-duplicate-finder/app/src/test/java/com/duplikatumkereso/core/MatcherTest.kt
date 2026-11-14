@@ -52,6 +52,47 @@ class MatcherTest {
         assertTrue(m.matchedFrames > 10)
     }
 
+    /** Több részletből összevágott videó: a részletek a film [segments] szakaszai, egymás után. */
+    private fun cutClip(id: Long, film: Film, segments: List<Pair<Long, Long>>, noiseSeed: Int): VideoFingerprint {
+        val noise = Random(noiseSeed)
+        val duration = segments.sumOf { it.second - it.first }
+        fun filmTime(t: Long): Long {
+            var rest = t
+            for ((a, b) in segments) {
+                if (rest < b - a) return a + rest
+                rest -= b - a
+            }
+            return segments.last().second - 1
+        }
+        val start = interval / 2
+        val times = generateSequence(start) { it + interval }.takeWhile { it < duration }.toList()
+        val hashes = LongArray(times.size) { film.frameAt(filmTime(times[it]), noise) }
+        return VideoFingerprint(id, duration, start, interval, hashes, BooleanArray(times.size) { true })
+    }
+
+    @Test
+    fun multiSegmentCutIsFound() {
+        // 13:31-es eredeti, belőle 5 részletből összevágott 5:40-es videó
+        val film = Film(20, 14 * 60_000L)
+        val long = clip(1, film, 0, 811_000L, 201)
+        val parts = listOf(
+            62_000L to 121_000L,
+            298_000L to 361_000L,
+            507_000L to 584_000L,
+            702_000L to 763_000L,
+            727_000L - 600_000L to 727_000L - 520_000L,
+        )
+        val short = cutClip(2, film, parts, 202)
+        assertTrue("5:40 körül", kotlin.math.abs(short.durationMs - 340_000L) < 1000)
+        val m = Matcher.compare(long, short, params)
+        assertTrue("összevágott részletet kellett találni, kapott: $m", m is VideoMatch.Subclip)
+        m as VideoMatch.Subclip
+        assertTrue("több részlet kell, kapott: ${m.segments}", m.segments.size >= 3)
+        assertTrue(m.matchedFrames > 10)
+        // a régi (egyetlen eltolásos) módszer ezt nem találta volna meg
+        assertTrue(Matcher.score(long, short, params).bestWindow <= 10)
+    }
+
     @Test
     fun shortOverlapBelowThresholdIsIgnored() {
         val film = Film(2, 40 * 60_000L)
@@ -86,6 +127,16 @@ class MatcherTest {
         assertNull(Matcher.compare(a, b, params))
         assertNull(Matcher.compare(a, c, params))
         assertTrue(Matcher.findMatches(listOf(a, b, c), params).isEmpty())
+    }
+
+    @Test
+    fun manyUnrelatedVideosGiveNoFalseMatches() {
+        val rnd = Random(77)
+        val videos = (0 until 40).map { k ->
+            val len = rnd.nextLong(2 * 60_000L, 25 * 60_000L)
+            clip(k.toLong(), Film(1000 + k, len + 60_000L), 0, len, 3000 + k)
+        }
+        assertEquals(emptyList<VideoMatch>(), Matcher.findMatches(videos, params))
     }
 
     @Test

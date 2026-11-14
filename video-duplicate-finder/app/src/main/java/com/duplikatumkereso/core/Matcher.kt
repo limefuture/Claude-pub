@@ -52,7 +52,10 @@ sealed class VideoMatch {
         override val ratio: Double,
     ) : VideoMatch()
 
-    /** A rövidebb videó a hosszabb [startMs]..[endMs] szakaszából készült. */
+    /**
+     * A rövidebb videó a hosszabb videó részleteiből készült (akár több, összevágott részletből).
+     * [segments]: a felhasznált szakaszok a hosszabb videóban (kezdet, vég ms).
+     */
     data class Subclip(
         val longId: Long,
         val shortId: Long,
@@ -60,8 +63,23 @@ sealed class VideoMatch {
         val endMs: Long,
         override val matchedFrames: Int,
         override val ratio: Double,
+        val segments: List<Pair<Long, Long>> = listOf(startMs to endMs),
     ) : VideoMatch()
 }
+
+/** Két videó összevetésének részletes eredménye (diagnosztikához is). */
+data class PairScore(
+    val shortId: Long,
+    val longId: Long,
+    /** egyező kockák, amelyek egy összefüggő részlet tagjai (a szomszédjuk is ugyanott egyezik) */
+    val consistent: Int,
+    /** a legjobb egyetlen időeltolásnál egyező kockák */
+    val bestWindow: Int,
+    /** a rövidebb videó használható kockái */
+    val shortValid: Int,
+    val sameLength: Boolean,
+    val segments: List<Pair<Long, Long>>,
+)
 
 object Matcher {
 
@@ -101,73 +119,139 @@ object Matcher {
     }
 
     /**
-     * Két videó összevetése. A rövidebb videó minden kockáját összehasonlítjuk a
-     * hosszabb minden kockájával, és az egyezéseket időeltolás szerint csoportosítjuk.
-     * Valódi egyezésnél a kockák (nagyjából) ugyanazzal az eltolással egyeznek,
-     * véletlen egyezéseknél szétszórva.
+     * Két videó részletes összevetése. A rövidebb videó minden kockáját összehasonlítjuk a
+     * hosszabb minden kockájával. Egy egyezés akkor "következetes", ha a rövid videó
+     * szomszédos kockája is (közel) ugyanazzal az időeltolással egyezik – így egy több
+     * részletből összevágott videó minden részlete beszámít, a véletlen egyezések nem.
      */
-    fun compare(a: VideoFingerprint, b: VideoFingerprint, p: MatchParams): VideoMatch? {
+    fun score(a: VideoFingerprint, b: VideoFingerprint, p: MatchParams): PairScore {
         val (s, l) = if (a.durationMs <= b.durationMs) a to b else b to a
         val interval = max(1L, max(s.intervalMs, l.intervalMs))
+        val tolerance = max(p.durationToleranceMs, (l.durationMs * p.durationToleranceFraction).toLong())
+        val sameLength = abs(l.durationMs - s.durationMs) <= tolerance
 
-        // eltolás-sáv -> (rövid videó kockaindexe, pontos eltolás)
-        val bins = HashMap<Long, MutableList<LongArray>>()
+        // rövid kocka indexe -> egyezések (eltolás-sáv, hosszú videóbeli idő)
+        val perFrame = Array(s.hashes.size) { ArrayList<LongArray>(0) }
+        val bins = HashMap<Long, HashSet<Int>>()
         for (i in s.hashes.indices) {
             if (!s.valid[i]) continue
             val hs = s.hashes[i]
             for (j in l.hashes.indices) {
                 if (!l.valid[j]) continue
                 if (ImageHash.distance(hs, l.hashes[j]) <= p.frameThreshold) {
-                    val offset = l.timeAt(j) - s.timeAt(i)
-                    val bin = Math.floorDiv(offset, interval)
-                    bins.getOrPut(bin) { ArrayList() }.add(longArrayOf(i.toLong(), offset))
+                    val tl = l.timeAt(j)
+                    val bin = Math.floorDiv(tl - s.timeAt(i), interval)
+                    perFrame[i].add(longArrayOf(bin, tl))
+                    bins.getOrPut(bin) { HashSet() }.add(i)
                 }
             }
         }
-        if (bins.isEmpty()) return null
 
-        // A mintavétel miatt a valódi eltolás két szomszédos sávba eshet: ablak = [bin, bin+1]
-        var bestCount = 0
-        var bestOffsets: List<Long> = emptyList()
+        // legjobb egyetlen eltolás (összefüggő részlet / azonos videó)
+        var bestWindow = 0
         for (bin in bins.keys) {
-            val entries = bins[bin].orEmpty() + bins[bin + 1].orEmpty()
-            val frames = HashSet<Long>()
-            for (e in entries) frames.add(e[0])
-            if (frames.size > bestCount) {
-                bestCount = frames.size
-                bestOffsets = entries.map { it[1] }
-            }
+            val frames = HashSet<Int>(bins[bin].orEmpty())
+            frames.addAll(bins[bin + 1].orEmpty())
+            bestWindow = max(bestWindow, frames.size)
         }
-        val ratio = bestCount.toDouble() / max(1, s.validCount)
 
-        val tolerance = max(p.durationToleranceMs, (l.durationMs * p.durationToleranceFraction).toLong())
-        val sameLength = abs(l.durationMs - s.durationMs) <= tolerance
+        // Részletek: egymás utáni kockák, amelyeknek van közös (±1 sáv) időeltolásuk.
+        // A lehetséges eltolások halmazát kockáról kockára szűkítjük; ha kiürül, új részlet kezdődik
+        // (pl. egy vágásnál). Csak a legalább 2 kockás részletek számítanak.
+        val segments = ArrayList<Pair<Long, Long>>()
+        var consistent = 0
+        var runFirst = -1
+        var runLast = -1
+        var runBins: Set<Long> = emptySet()
+        fun closeRun() {
+            if (runFirst >= 0 && runLast > runFirst && runBins.isNotEmpty()) {
+                consistent += runLast - runFirst + 1
+                // azonos mintavételnél az eltolások az intervallum többszörösei: átlaguk a valódi eltolás becslése
+                val offset = (runBins.average() * interval).toLong()
+                val half = interval / 2
+                val st = (s.timeAt(runFirst) - half + offset).coerceIn(0L, l.durationMs)
+                val en = (s.timeAt(runLast) + half + offset).coerceIn(0L, l.durationMs)
+                if (en > st) segments.add(st to en)
+            }
+            runFirst = -1
+            runLast = -1
+            runBins = emptySet()
+        }
+        for (i in perFrame.indices) {
+            val bins = perFrame[i].map { it[0] }.toSet()
+            if (bins.isEmpty()) {
+                closeRun()
+                continue
+            }
+            if (runFirst >= 0 && i == runLast + 1) {
+                val narrowed = bins.filter { b -> runBins.any { abs(it - b) <= 1 } }.toSet()
+                if (narrowed.isNotEmpty()) {
+                    runBins = narrowed
+                    runLast = i
+                    continue
+                }
+            }
+            closeRun()
+            runFirst = i
+            runLast = i
+            runBins = bins
+        }
+        closeRun()
+        val padded = segments
 
-        return if (sameLength) {
-            if (bestCount > 0 && (ratio >= p.sameLengthRatio || bestCount > p.minMatches)) {
-                VideoMatch.SameContent(a.id, b.id, bestCount, ratio)
+        return PairScore(s.id, l.id, consistent, bestWindow, s.validCount, sameLength, padded)
+    }
+
+    fun decide(sc: PairScore, p: MatchParams): VideoMatch? {
+        if (sc.sameLength) {
+            val ratio = sc.bestWindow.toDouble() / max(1, sc.shortValid)
+            return if (sc.bestWindow > 0 && (ratio >= p.sameLengthRatio || sc.bestWindow > p.minMatches)) {
+                VideoMatch.SameContent(sc.shortId, sc.longId, sc.bestWindow, ratio)
             } else {
                 null
             }
-        } else if (bestCount > p.minMatches) {
-            val sorted = bestOffsets.sorted()
-            val median = sorted[sorted.size / 2]
-            val start = median.coerceIn(0, l.durationMs)
-            val end = min(start + s.durationMs, l.durationMs)
-            VideoMatch.Subclip(l.id, s.id, start, end, bestCount, ratio)
-        } else {
-            null
         }
+        if (sc.consistent <= p.minMatches || sc.segments.isEmpty()) return null
+        val ratio = sc.consistent.toDouble() / max(1, sc.shortValid)
+        return VideoMatch.Subclip(
+            longId = sc.longId,
+            shortId = sc.shortId,
+            startMs = sc.segments.minOf { it.first },
+            endMs = sc.segments.maxOf { it.second },
+            matchedFrames = sc.consistent,
+            ratio = ratio,
+            segments = sc.segments,
+        )
     }
 
-    fun findMatches(fps: List<VideoFingerprint>, p: MatchParams, isCancelled: () -> Boolean = { false }): List<VideoMatch> {
-        val result = ArrayList<VideoMatch>()
-        for ((x, y) in candidatePairs(fps, p.bucketCap)) {
-            if (isCancelled()) break
-            compare(fps[x], fps[y], p)?.let { result.add(it) }
+    fun compare(a: VideoFingerprint, b: VideoFingerprint, p: MatchParams): VideoMatch? = decide(score(a, b, p), p)
+
+    /**
+     * Minden jelölt pár pontozása. Kevés videónál (≤ [bruteForceLimit]) minden párt
+     * összevetünk, így semmi nem csúszik ki; sok videónál a sáv-index adja a jelölteket.
+     */
+    fun analyze(
+        fps: List<VideoFingerprint>,
+        p: MatchParams,
+        isCancelled: () -> Boolean = { false },
+        bruteForceLimit: Int = 300,
+    ): List<Pair<PairScore, VideoMatch?>> {
+        val pairs = if (fps.size <= bruteForceLimit) {
+            buildList { for (x in fps.indices) for (y in x + 1 until fps.size) add(x to y) }
+        } else {
+            candidatePairs(fps, p.bucketCap)
         }
-        return result
+        val out = ArrayList<Pair<PairScore, VideoMatch?>>()
+        for ((x, y) in pairs) {
+            if (isCancelled()) break
+            val sc = score(fps[x], fps[y], p)
+            if (sc.bestWindow > 0 || sc.consistent > 0) out.add(sc to decide(sc, p))
+        }
+        return out
     }
+
+    fun findMatches(fps: List<VideoFingerprint>, p: MatchParams, isCancelled: () -> Boolean = { false }): List<VideoMatch> =
+        analyze(fps, p, isCancelled).mapNotNull { it.second }
 
     /**
      * Hasonló képek csoportosítása. 8 db 8 bites sáv: ha két hash legfeljebb 7 bitben tér el,

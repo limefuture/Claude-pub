@@ -1,5 +1,6 @@
 package com.duplikatumkereso.scan
 
+import com.duplikatumkereso.core.Format
 import com.duplikatumkereso.core.MatchParams
 import com.duplikatumkereso.core.Matcher
 import com.duplikatumkereso.core.UnionFind
@@ -25,6 +26,7 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.max
 
 class Scanner(
     private val repo: MediaRepository,
@@ -90,6 +92,7 @@ class Scanner(
         val reps = items.filter { it.id !in duplicatesOfOthers }
 
         // 3. Videók képkockái
+        val diagnostics = ArrayList<String>()
         val sameContent = ArrayList<DupGroup>()
         val subclips = ArrayList<com.duplikatumkereso.data.SubclipMatch>()
         if (o.videos) {
@@ -136,7 +139,34 @@ class Scanner(
                 durationToleranceMs = o.durationToleranceSec * 1000L,
             )
             val fpList = videos.mapNotNull { fps[it.id] }
-            val matches = Matcher.findMatches(fpList, params, cancelled)
+            val analysis = Matcher.analyze(fpList, params, cancelled)
+            val matches = analysis.mapNotNull { it.second }
+
+            // Diagnosztika (csak számok): videónként a kockák, páronként az egyezések.
+            diagnostics.add("Beállítás: ${o.intervalSec} mp-enként 1 kocka, részlethez >${o.minMatches} egyező kocka, kockánként ≤${o.frameThreshold} bit eltérés.")
+            for (item in videos.sortedBy { it.name }.take(100)) {
+                val fp = fps[item.id]
+                diagnostics.add(
+                    if (fp == null) {
+                        "${item.name}: NEM sikerült elemezni"
+                    } else {
+                        "${item.name}: ${Format.duration(fp.durationMs)}, ${fp.hashes.size} kocka, ebből ${fp.validCount} használható"
+                    },
+                )
+            }
+            val names = videos.associate { it.id to it.name }
+            analysis.sortedByDescending { max(it.first.consistent, it.first.bestWindow) }.take(15).forEach { (sc, m) ->
+                val verdict = when (m) {
+                    is VideoMatch.Subclip -> "→ RÉSZLET"
+                    is VideoMatch.SameContent -> "→ AZONOS"
+                    null -> "→ nem jelezve"
+                }
+                diagnostics.add(
+                    "${names[sc.shortId]} ↔ ${names[sc.longId]}: részletekben ${sc.consistent} egyező kocka " +
+                        "(${sc.segments.size} részlet), egy eltolásnál ${sc.bestWindow}, rövidebb használható kockái ${sc.shortValid} $verdict",
+                )
+            }
+            if (analysis.isEmpty() && fpList.size > 1) diagnostics.add("Egyik videópárban sincs egyetlen egyező kocka sem.")
             ensureActive()
 
             // Azonos tartalom: csoportokká fűzzük
@@ -165,7 +195,7 @@ class Scanner(
                 val l = byId[m.longId]
                 val s = byId[m.shortId]
                 if (l != null && s != null) {
-                    subclips.add(com.duplikatumkereso.data.SubclipMatch(l, s, m.startMs, m.endMs, m.matchedFrames, m.ratio))
+                    subclips.add(com.duplikatumkereso.data.SubclipMatch(l, s, m.startMs, m.endMs, m.matchedFrames, m.ratio, m.segments))
                 }
             }
         }
@@ -208,6 +238,7 @@ class Scanner(
             images = imageGroups.sortedByDescending { it.reclaimable },
             skippedFiles = skippedHere,
             notIndexed = listing.notIndexed,
+            diagnostics = diagnostics,
         )
     }
 }

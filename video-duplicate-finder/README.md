@@ -31,8 +31,11 @@ A frissítések a régi verzióra telepíthetők (azonos aláíró kulcs: `app/a
   ez a felbontástól és a tömörítéstől szinte független.
 * Két kocka egyezik, ha legfeljebb 10 bitben tér el (beállítható).
 * A fekete/egyszínű kockákat (elsötétítés) kihagyja, mert azok mindennel egyeznének.
-* Részletnél az egyező kockapároknak nagyjából ugyanazzal az időeltolással kell egyezniük
-  (a két videó mintavétele legfeljebb fél intervallummal csúszhat el egymáshoz képest).
+* Részletnél egy egyező kocka akkor számít, ha a szomszédos kocka is (közel) ugyanazzal
+  az időeltolással egyezik. Így a **több részletből összevágott** videók minden részlete
+  beszámít, a véletlen, magányos egyezések viszont nem. Az idővonal minden részletet mutat.
+* Az eredmény alján a „Vizsgálat részletei” csak számokat mutat (kockaszám, egyezések
+  páronként), hibakereséshez kimásolható.
 * 10 mp-es mintavételnél a „10-nél több egyező kocka” feltétel miatt kb. **2 percnél
   hosszabb** közös szakasz kell a részlet felismeréséhez. Rövidebb részletekhez a
   Beállításokban csökkenthető a mintavételi idő vagy az egyező kockák száma.

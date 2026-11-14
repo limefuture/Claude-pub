@@ -40,6 +40,8 @@ data class SubclipMatch(
     val endMs: Long,
     val matchedFrames: Int,
     val ratio: Double,
+    /** a felhasznált részletek a hosszabb videóban (kezdet, vég ms) */
+    val segments: List<Pair<Long, Long>> = listOf(startMs to endMs),
 )
 
 data class ScanResult(
@@ -54,6 +56,8 @@ data class ScanResult(
     val skippedFiles: List<String> = emptyList(),
     /** A rendszer médiatárában nem szereplő (közvetlenül a mappából olvasott) fájlok száma */
     val notIndexed: Int = 0,
+    /** Diagnosztika: csak számok és fájlnevek, a képtartalomból semmi. */
+    val diagnostics: List<String> = emptyList(),
 ) {
     val totalReclaimable: Long
         get() = (exact + sameContent + images).sumOf { it.reclaimable }

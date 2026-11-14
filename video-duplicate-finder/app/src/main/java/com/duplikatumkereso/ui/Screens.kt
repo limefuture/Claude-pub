@@ -413,6 +413,9 @@ fun ResultsScreen(vm: MainViewModel, result: ScanResult, onRescan: () -> Unit, o
                     items(result.images, key = { "i" + it.kind.name + it.keepId }) { GroupCard(vm, it) }
                 }
             }
+            if (result.diagnostics.isNotEmpty()) {
+                item(key = "diag") { DiagnosticsCard(result.diagnostics) }
+            }
         }
 
         val selectedCount = vm.selection.size
@@ -562,12 +565,12 @@ private fun SubclipCard(vm: MainViewModel, m: SubclipMatch) {
                     fontFamily = FontFamily.Monospace,
                 )
             }
-            Timeline(m.startMs, m.endMs, m.long.durationMs)
+            Timeline(m.segments, m.long.durationMs)
             Row(Modifier.fillMaxWidth()) {
                 Text("0:00", color = C.text3, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
                 Spacer(Modifier.weight(1f))
                 Text(
-                    "${Format.duration(m.startMs)} – ${Format.duration(m.endMs)}",
+                    if (m.segments.size == 1) "${Format.duration(m.startMs)} – ${Format.duration(m.endMs)}" else "${m.segments.size} részlet",
                     color = C.accentText,
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
@@ -578,9 +581,16 @@ private fun SubclipCard(vm: MainViewModel, m: SubclipMatch) {
         }
         FileRow(vm, m.short, keep = false)
         Text(
-            "A rövidebb videó (${Format.duration(m.short.durationMs)}) a hosszabb " +
-                "${Format.duration(m.startMs)} és ${Format.duration(m.endMs)} közötti szakaszából készült. " +
-                "Ha külön is kell, ne töröld.",
+            if (m.segments.size == 1) {
+                "A rövidebb videó (${Format.duration(m.short.durationMs)}) a hosszabb " +
+                    "${Format.duration(m.startMs)} és ${Format.duration(m.endMs)} közötti szakaszából készült. " +
+                    "Ha külön is kell, ne töröld."
+            } else {
+                "A rövidebb videó (${Format.duration(m.short.durationMs)}) a hosszabb ${m.segments.size} részletéből " +
+                    "van összevágva: " +
+                    m.segments.joinToString(", ") { "${Format.duration(it.first)}–${Format.duration(it.second)}" } +
+                    ". Ha külön is kell, ne töröld."
+            },
             color = C.text2,
             fontSize = 12.sp,
             lineHeight = 18.sp,
@@ -589,7 +599,7 @@ private fun SubclipCard(vm: MainViewModel, m: SubclipMatch) {
 }
 
 @Composable
-private fun Timeline(startMs: Long, endMs: Long, totalMs: Long) {
+private fun Timeline(segments: List<Pair<Long, Long>>, totalMs: Long) {
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
@@ -598,16 +608,18 @@ private fun Timeline(startMs: Long, endMs: Long, totalMs: Long) {
             .background(C.track),
     ) {
         val total = totalMs.coerceAtLeast(1).toFloat()
-        val startFrac = (startMs / total).coerceIn(0f, 0.985f)
-        val widthFrac = ((endMs - startMs) / total).coerceIn(0.015f, 1f - startFrac)
-        Box(
-            Modifier
-                .offset(x = maxWidth * startFrac)
-                .width(maxWidth * widthFrac)
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(4.dp))
-                .background(C.accent),
-        )
+        for ((startMs, endMs) in segments) {
+            val startFrac = (startMs / total).coerceIn(0f, 0.985f)
+            val widthFrac = ((endMs - startMs) / total).coerceIn(0.015f, 1f - startFrac)
+            Box(
+                Modifier
+                    .offset(x = maxWidth * startFrac)
+                    .width(maxWidth * widthFrac)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(C.accent),
+            )
+        }
     }
 }
 
@@ -859,5 +871,39 @@ private fun StepButton(symbol: String, label: String, enabled: Boolean, onClick:
         contentAlignment = Alignment.Center,
     ) {
         Text(symbol, color = if (enabled) C.text else C.text3, fontSize = 20.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+private fun DiagnosticsCard(lines: List<String>) {
+    val ctx = LocalContext.current
+    var open by remember { mutableStateOf(false) }
+    Column(Modifier.padding(top = 8.dp)) {
+        TextButton(onClick = { open = !open }, contentPadding = PaddingValues(horizontal = 4.dp)) {
+            Text(if (open) "Vizsgálat részletei ▲" else "Vizsgálat részletei ▼", color = C.text2, fontSize = 13.sp)
+        }
+        if (open) {
+            SectionCard {
+                Text(
+                    "Csak számok és fájlnevek, a videók tartalmából semmi. Ha valami nem stimmel, ezt másold ki.",
+                    color = C.text3,
+                    fontSize = 12.sp,
+                )
+                for (line in lines) {
+                    Text(line, color = C.text2, fontSize = 12.sp, fontFamily = FontFamily.Monospace, lineHeight = 16.sp)
+                }
+                OutlinedButton(
+                    onClick = {
+                        val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
+                        cm.setPrimaryClip(android.content.ClipData.newPlainText("Diagnosztika", lines.joinToString("\n")))
+                        android.widget.Toast.makeText(ctx, "Vágólapra másolva", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, C.outline),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = C.text),
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Másolás") }
+            }
+        }
     }
 }
