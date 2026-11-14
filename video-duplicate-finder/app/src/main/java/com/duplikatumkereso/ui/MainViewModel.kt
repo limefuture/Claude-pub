@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.duplikatumkereso.core.FolderRef
 import com.duplikatumkereso.data.AppSettings
+import com.duplikatumkereso.data.CrashGuard
 import com.duplikatumkereso.data.FingerprintCache
 import com.duplikatumkereso.data.GroupKind
 import com.duplikatumkereso.data.MediaRepository
@@ -51,7 +52,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val progress = ScanState.progress
     val result = ScanState.result
 
+    var crashedOn by mutableStateOf<List<String>>(emptyList())
+    var skippedCount by mutableStateOf(0)
+        private set
+
     init {
+        // Ha az előző vizsgálat közben az app leállt: a gyanús fájlokat feljegyezzük, legközelebb kihagyjuk.
+        if (ScanState.job?.isActive != true) {
+            crashedOn = CrashGuard(app).recoverFromPreviousRun()
+        }
         viewModelScope.launch {
             var lastCreated = ScanState.result.value?.createdAt
             ScanState.result.collect { r ->
@@ -182,7 +191,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- Beállítások ----
 
+    fun clearSkipped() {
+        CrashGuard(getApplication()).clearSkipped()
+        skippedCount = 0
+        message = "A kihagyott fájlok listája törölve, a következő vizsgálat újra megpróbálja őket."
+    }
+
     fun loadCacheInfo() {
+        skippedCount = CrashGuard(getApplication()).skipped().size
         viewModelScope.launch {
             cacheEntries = withContext(Dispatchers.IO) {
                 FingerprintCache(getApplication()).use { it.entryCount() }

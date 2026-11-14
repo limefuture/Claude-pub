@@ -138,6 +138,14 @@ fun HomeScreen(
             ToggleRow("Képek", vm.scanImages) { vm.scanImages = it }
         }
 
+        if (vm.crashedOn.isNotEmpty()) {
+            InfoText(
+                "Az előző vizsgálat közben az app leállt ennél a fájlnál: " +
+                    vm.crashedOn.joinToString(", ") +
+                    ". A következő vizsgálat ezt kihagyja (Beállításokban visszaállítható).",
+            ) { vm.crashedOn = emptyList() }
+        }
+
         when (progress) {
             is ScanProgress.Cancelled -> InfoText("A vizsgálat megszakadt. Az eddig elemzett fájlokat megjegyeztem, újraindításkor onnan folytatja.") {
                 vm.acknowledgeProgress()
@@ -349,6 +357,17 @@ fun ResultsScreen(vm: MainViewModel, result: ScanResult, onRescan: () -> Unit, o
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (result.skippedFiles.isNotEmpty()) {
+                item {
+                    Text(
+                        "Kihagyva (korábban leállást okozott): " + result.skippedFiles.joinToString(", "),
+                        color = C.text3,
+                        fontSize = 12.sp,
+                        lineHeight = 17.sp,
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                    )
+                }
+            }
             when (vm.tab) {
                 Tab.EXACT -> {
                     if (result.exact.isEmpty()) item { EmptyTab("Nincs bájtra pontosan egyező videó.") }
@@ -552,7 +571,7 @@ private fun Timeline(startMs: Long, endMs: Long, totalMs: Long) {
             .background(C.track),
     ) {
         val total = totalMs.coerceAtLeast(1).toFloat()
-        val startFrac = (startMs / total).coerceIn(0f, 1f)
+        val startFrac = (startMs / total).coerceIn(0f, 0.985f)
         val widthFrac = ((endMs - startMs) / total).coerceIn(0.015f, 1f - startFrac)
         Box(
             Modifier
@@ -744,6 +763,24 @@ fun SettingsScreen(vm: MainViewModel) {
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = C.text),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Tárolt ujjlenyomatok törlése") }
+        }
+
+        if (vm.skippedCount > 0) {
+            SectionCard {
+                CardHeader("Kihagyott fájlok", "${vm.skippedCount} db")
+                Text(
+                    "Ezek a fájlok korábban az app leállását okozták, ezért a vizsgálat kihagyja őket.",
+                    color = C.text2,
+                    fontSize = 13.sp,
+                )
+                OutlinedButton(
+                    onClick = vm::clearSkipped,
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, C.outline),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = C.text),
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Újrapróbálás legközelebb") }
+            }
         }
     }
 }

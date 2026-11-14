@@ -13,7 +13,7 @@ import android.util.Size
 import com.duplikatumkereso.core.FolderRef
 import com.duplikatumkereso.core.ImageHash
 import com.duplikatumkereso.core.VideoFingerprint
-import java.io.FileInputStream
+import android.os.ParcelFileDescriptor
 import java.nio.ByteBuffer
 import java.security.MessageDigest
 import kotlin.math.max
@@ -100,8 +100,11 @@ class MediaRepository(private val context: Context) {
     fun partialHash(item: MediaItem): String {
         val chunk = 1 shl 20
         val md = MessageDigest.getInstance("SHA-256")
-        resolver.openFileDescriptor(item.uri, "r")!!.use { pfd ->
-            FileInputStream(pfd.fileDescriptor).channel.use { ch ->
+        val pfd = resolver.openFileDescriptor(item.uri, "r") ?: error("nem olvasható: ${item.name}")
+        // Az AutoCloseInputStream a ParcelFileDescriptort zárja le (egyszer). Ha egy sima
+        // FileInputStream zárná le a leírót, az Android fdsan védelme azonnal leállítaná az appot.
+        ParcelFileDescriptor.AutoCloseInputStream(pfd).use { stream ->
+            stream.channel.let { ch ->
                 val size = ch.size()
                 md.update(ByteBuffer.allocate(8).putLong(size).array())
                 val buf = ByteBuffer.allocate(chunk)

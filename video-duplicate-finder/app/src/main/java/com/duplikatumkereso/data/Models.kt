@@ -50,6 +50,8 @@ data class ScanResult(
     val sameContent: List<DupGroup>,
     val subclips: List<SubclipMatch>,
     val images: List<DupGroup>,
+    /** Korábban összeomlást okozó, ezért kihagyott fájlok */
+    val skippedFiles: List<String> = emptyList(),
 ) {
     val totalReclaimable: Long
         get() = (exact + sameContent + images).sumOf { it.reclaimable }

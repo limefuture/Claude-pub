@@ -13,6 +13,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.duplikatumkereso.R
+import com.duplikatumkereso.data.CrashGuard
 import com.duplikatumkereso.data.FingerprintCache
 import com.duplikatumkereso.data.MediaRepository
 import com.duplikatumkereso.data.ScanProgress
@@ -51,8 +52,10 @@ class ScanService : Service() {
 
         ScanState.job = scope.launch {
             val cache = FingerprintCache(applicationContext)
+            val guard = CrashGuard(applicationContext)
+            guard.recoverFromPreviousRun()
             try {
-                val result = Scanner(MediaRepository(applicationContext), cache).run(options) { p ->
+                val result = Scanner(MediaRepository(applicationContext), cache, guard).run(options) { p ->
                     ScanState.progress.value = p
                     notifyProgress(p)
                 }
@@ -63,6 +66,7 @@ class ScanService : Service() {
             } catch (e: Throwable) {
                 ScanState.progress.value = ScanProgress.Failed(e.message ?: e.javaClass.simpleName)
             } finally {
+                guard.finish()
                 cache.close()
                 ServiceCompat.stopForeground(this@ScanService, ServiceCompat.STOP_FOREGROUND_REMOVE)
                 stopSelf()

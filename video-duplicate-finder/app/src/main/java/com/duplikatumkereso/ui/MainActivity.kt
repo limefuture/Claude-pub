@@ -1,6 +1,14 @@
 package com.duplikatumkereso.ui
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.sp
+import com.duplikatumkereso.DupApp
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -64,6 +72,7 @@ fun App(vm: MainViewModel = viewModel()) {
     val progress by vm.progress.collectAsStateWithLifecycle()
     val result by vm.result.collectAsStateWithLifecycle()
     var showPermissionHelp by remember { mutableStateOf(false) }
+    var lastCrash by remember { mutableStateOf(DupApp.takeLastCrash(ctx)) }
 
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
         if (uri != null) vm.setFolderFromDocumentId(DocumentsContract.getTreeDocumentId(uri))
@@ -146,6 +155,30 @@ fun App(vm: MainViewModel = viewModel()) {
                 onScan = ::requestScan,
             )
         }
+    }
+
+    lastCrash?.let { crash ->
+        AlertDialog(
+            onDismissRequest = { lastCrash = null },
+            title = { Text("Az app legutóbb hibával leállt") },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text("Másold ki a hiba leírását, és küldd el a fejlesztőnek. (Semmi nem lett elküldve automatikusan.)")
+                    Text(crash, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val cm = ctx.getSystemService(ClipboardManager::class.java)
+                    cm.setPrimaryClip(ClipData.newPlainText("Hiba", crash))
+                    Toast.makeText(ctx, "Vágólapra másolva", Toast.LENGTH_SHORT).show()
+                    lastCrash = null
+                }) { Text("Másolás") }
+            },
+            dismissButton = {
+                TextButton(onClick = { lastCrash = null }) { Text("Bezárás") }
+            },
+        )
     }
 
     if (showPermissionHelp) {

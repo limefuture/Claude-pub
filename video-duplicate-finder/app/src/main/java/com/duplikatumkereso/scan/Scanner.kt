@@ -5,6 +5,7 @@ import com.duplikatumkereso.core.Matcher
 import com.duplikatumkereso.core.UnionFind
 import com.duplikatumkereso.core.VideoFingerprint
 import com.duplikatumkereso.core.VideoMatch
+import com.duplikatumkereso.data.CrashGuard
 import com.duplikatumkereso.data.DupGroup
 import com.duplikatumkereso.data.FingerprintCache
 import com.duplikatumkereso.data.GroupKind
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class Scanner(
     private val repo: MediaRepository,
     private val cache: FingerprintCache,
+    private val guard: CrashGuard,
 ) {
     suspend fun run(o: ScanOptions, report: (ScanProgress.Running) -> Unit): ScanResult = withContext(Dispatchers.IO) {
         val ctx = coroutineContext
@@ -35,7 +37,10 @@ class Scanner(
 
         // 1. Fájlok listázása a MediaStore-ból (méret, hossz, felbontás egyből megvan)
         report(ScanProgress.Running("Fájlok listázása", 0, 0))
-        val items = repo.query(o)
+        val skipped = guard.skipped()
+        val allItems = repo.query(o)
+        val items = allItems.filter { it.cacheKey !in skipped }
+        val skippedHere = allItems.filter { it.cacheKey in skipped }.map { "${it.relativePath}${it.name}" }
         val byId = items.associateBy { it.id }
 
         // 2. Pontos egyezés: azonos méret -> részleges hash -> teljes hash
@@ -49,7 +54,7 @@ class Scanner(
                 hashed++
                 report(ScanProgress.Running("Azonos méretű fájlok ellenőrzése", hashed, toHash, item.name))
                 val cached = cache.getHashes(item)
-                val p = cached.first ?: runCatching { repo.partialHash(item) }.getOrNull()?.also {
+                val p = cached.first ?: runCatching { guard.guard(item) { repo.partialHash(item) } }.getOrNull()?.also {
                     cache.putHashes(item, it, cached.second)
                 }
                 p?.let { item to it }
@@ -60,7 +65,7 @@ class Scanner(
                     ensureActive()
                     report(ScanProgress.Running("Teljes tartalom összevetése", hashed, toHash, item.name))
                     val cached = cache.getHashes(item)
-                    val f = cached.second ?: runCatching { repo.fullHash(item, cancelled) }.getOrNull()?.also {
+                    val f = cached.second ?: runCatching { guard.guard(item) { repo.fullHash(item, cancelled) } }.getOrNull()?.also {
                         cache.putHashes(item, cached.first, it)
                     }
                     f?.let { item to it }
@@ -98,7 +103,9 @@ class Scanner(
                         sem.withPermit {
                             ensureActive()
                             val fp = cache.getVideo(item, intervalMs, o.accurateFrames)
-                                ?: repo.videoFingerprint(item, intervalMs, o.accurateFrames, cancelled)?.also {
+                                ?: guard.guard(item) {
+                                    repo.videoFingerprint(item, intervalMs, o.accurateFrames, cancelled)
+                                }?.also {
                                     if (!cancelled()) cache.putVideo(item, o.accurateFrames, it)
                                 }
                             if (fp != null) fps[item.id] = fp
@@ -158,7 +165,8 @@ class Scanner(
             for ((i, item) in images.withIndex()) {
                 ensureActive()
                 if (i % 20 == 0) report(ScanProgress.Running("Képek elemzése", i, images.size, item.name))
-                val h = cache.getImage(item) ?: (repo.imageHash(item) ?: Long.MIN_VALUE).also { cache.putImage(item, it) }
+                val h = cache.getImage(item)
+                    ?: (guard.guard(item) { repo.imageHash(item) } ?: Long.MIN_VALUE).also { cache.putImage(item, it) }
                 if (h != Long.MIN_VALUE) {
                     ids.add(item.id)
                     hashes.add(h)
@@ -179,6 +187,7 @@ class Scanner(
             sameContent = sameContent.sortedByDescending { it.reclaimable },
             subclips = subclips.sortedByDescending { it.short.size },
             images = imageGroups.sortedByDescending { it.reclaimable },
+            skippedFiles = skippedHere,
         )
     }
 }
