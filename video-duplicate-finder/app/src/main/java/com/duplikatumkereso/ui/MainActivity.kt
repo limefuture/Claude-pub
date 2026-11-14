@@ -117,7 +117,12 @@ fun App(vm: MainViewModel = viewModel()) {
     fun launchSender(action: String, sender: IntentSender?) {
         if (sender == null) return
         trashAction = action
-        intentSenderLauncher.launch(IntentSenderRequest.Builder(sender).build())
+        try {
+            intentSenderLauncher.launch(IntentSenderRequest.Builder(sender).build())
+        } catch (e: Exception) {
+            trashAction = null
+            Toast.makeText(ctx, "A rendszer nem nyitotta meg a megerősítést: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
     LaunchedEffect(vm.message) {

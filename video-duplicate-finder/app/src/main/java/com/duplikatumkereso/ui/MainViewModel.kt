@@ -180,19 +180,31 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             r.subclips.flatMap { listOf(it.long, it.short) }).distinctBy { it.id }
         val chosen = all.filter { it.id in selection }
         if (chosen.isEmpty()) return null
-        val media = ArrayList<Pair<MediaItem, Uri>>()
+        var media = ArrayList<Pair<MediaItem, Uri>>()
         val docs = ArrayList<MediaItem>()
         for (item in chosen) {
-            val u = repo.mediaStoreUriFor(item)
+            val u = runCatching { repo.mediaStoreUriFor(item) }.getOrNull()
             if (u != null) media.add(item to u) else docs.add(item)
         }
-        if (media.isEmpty()) {
+        var sender = if (media.isEmpty()) null else runCatching { repo.trashRequest(media.map { it.second }) }.getOrNull()
+        if (media.isNotEmpty() && sender == null) {
+            // A rendszer valamelyiket nem fogadta el: egyenként szétválogatjuk.
+            val (ok, bad) = media.partition { repo.canTrash(it.second) }
+            docs.addAll(bad.map { it.first })
+            media = ArrayList(ok)
+            sender = if (media.isEmpty()) null else runCatching { repo.trashRequest(media.map { it.second }) }.getOrNull()
+            if (sender == null) {
+                docs.addAll(media.map { it.first })
+                media = ArrayList()
+            }
+        }
+        if (sender == null) {
             pendingPermanentDelete = docs
             return null
         }
         docsAfterTrash = docs
         pendingTrash = media.map { it.first.id }.toSet()
-        return repo.trashRequest(media.map { it.second }).intentSender
+        return sender.intentSender
     }
 
     fun onTrashResult(ok: Boolean) {
@@ -248,10 +260,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private fun selectedTrashUris(): List<Uri> = trashItems.filter { it.id in trashSelection }.map { it.uri }
 
     fun restoreRequest(): IntentSender? =
-        selectedTrashUris().takeIf { it.isNotEmpty() }?.let { repo.restoreRequest(it).intentSender }
+        selectedTrashUris().takeIf { it.isNotEmpty() }?.let { uris ->
+            runCatching { repo.restoreRequest(uris).intentSender }
+                .onFailure { message = "A visszaállítás nem indítható: ${it.message}" }
+                .getOrNull()
+        }
 
     fun deleteForeverRequest(): IntentSender? =
-        selectedTrashUris().takeIf { it.isNotEmpty() }?.let { repo.deleteRequest(it).intentSender }
+        selectedTrashUris().takeIf { it.isNotEmpty() }?.let { uris ->
+            runCatching { repo.deleteRequest(uris).intentSender }
+                .onFailure { message = "A törlés nem indítható: ${it.message}" }
+                .getOrNull()
+        }
 
     fun onTrashActionDone() {
         trashSelection = emptySet()

@@ -214,8 +214,29 @@ class MediaRepository(private val context: Context) {
     /** Médiatárbeli megfelelő (kukázáshoz), ha van; null, ha a fájl nincs a médiatárban. */
     fun mediaStoreUriFor(item: MediaItem): Uri? {
         if (item.uri.authority == MediaStore.AUTHORITY) return item.uri
-        return runCatching { MediaStore.getMediaUri(context, item.uri) }.getOrNull()
+        // A getMediaUri általános "fájl" bejegyzést ad vissza; a kukázás viszont csak a
+        // Képek/Videók gyűjtemény elemeit fogadja el. A .nomedia mappák fájljai nem ilyenek.
+        val fileUri = runCatching { MediaStore.getMediaUri(context, item.uri) }.getOrNull() ?: return null
+        val id = runCatching { ContentUris.parseId(fileUri) }.getOrNull()?.takeIf { it >= 0 } ?: return null
+        val volume = runCatching { MediaStore.getVolumeName(fileUri) }.getOrDefault(item.volume)
+        val type = runCatching {
+            resolver.query(
+                MediaStore.Files.getContentUri(volume),
+                arrayOf(MediaStore.Files.FileColumns.MEDIA_TYPE),
+                "${MediaStore.MediaColumns._ID}=?",
+                arrayOf(id.toString()),
+                null,
+            )?.use { c -> if (c.moveToFirst()) c.getInt(0) else null }
+        }.getOrNull()
+        return when (type) {
+            MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> itemUri(volume, id, isVideo = true)
+            MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> itemUri(volume, id, isVideo = false)
+            else -> null
+        }
     }
+
+    /** Kukázható-e a rendszerkukába (próba-kérés; nem módosít semmit). */
+    fun canTrash(uri: Uri): Boolean = runCatching { trashRequest(listOf(uri)) }.isSuccess
 
     /** Végleges törlés a mappahozzáférésen át (médiatárban nem szereplő fájloknál). */
     fun deleteDocument(uri: Uri): Boolean =
