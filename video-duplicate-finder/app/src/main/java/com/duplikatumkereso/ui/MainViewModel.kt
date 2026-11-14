@@ -10,6 +10,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.duplikatumkereso.core.BulkRule
+import com.duplikatumkereso.core.BulkSelect
+import com.duplikatumkereso.core.Candidate
 import com.duplikatumkereso.core.FolderRef
 import com.duplikatumkereso.data.AppSettings
 import com.duplikatumkereso.data.CrashGuard
@@ -163,6 +166,32 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun selectAllButKeep(ids: List<Long>, keepId: Long) {
         selection = selection + ids.filter { it != keepId }
+    }
+
+    private fun MediaItem.candidate() = Candidate(id, dateModified, pixels, size, durationMs, isVideo)
+
+    /**
+     * Tömeges kijelölés az aktuális fül összes találatára. A fül eddigi kijelölését lecseréli,
+     * a többi fülét nem érinti.
+     */
+    fun applyBulk(rule: BulkRule) {
+        val r = result.value ?: return
+        val picked = HashSet<Long>()
+        val tabIds: Set<Long>
+        if (tab == Tab.SUBCLIP) {
+            tabIds = r.subclips.flatMap { listOf(it.long.id, it.short.id) }.toSet()
+            for (m in r.subclips) picked += BulkSelect.pickPair(rule, m.long.candidate(), m.short.candidate())
+        } else {
+            val groups = when (tab) {
+                Tab.EXACT -> r.exact
+                Tab.SAME -> r.sameContent
+                else -> r.images
+            }
+            tabIds = groups.flatMap { g -> g.items.map { it.id } }.toSet()
+            for (g in groups) picked += BulkSelect.pick(rule, g.items.map { it.candidate() })
+        }
+        selection = (selection - tabIds) + picked
+        message = if (rule == BulkRule.NONE) "Kijelölés törölve ezen a fülön." else "${picked.size} fájl kijelölve (${rule.label.lowercase()})."
     }
 
     fun selectedBytes(r: ScanResult): Long {

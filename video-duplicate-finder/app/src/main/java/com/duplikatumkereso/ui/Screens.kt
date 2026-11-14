@@ -58,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.duplikatumkereso.core.BulkSelect
 import com.duplikatumkereso.core.Format
 import com.duplikatumkereso.data.DupGroup
 import com.duplikatumkereso.data.GroupKind
@@ -375,6 +376,24 @@ fun ResultsScreen(vm: MainViewModel, result: ScanResult, onRescan: () -> Unit, o
                         Tab.IMAGES -> result.images.size
                     }
                     Pill("${t.label} $n", vm.tab == t) { vm.tab = t }
+                }
+            }
+            val tabHasItems = when (vm.tab) {
+                Tab.EXACT -> result.exact.isNotEmpty()
+                Tab.SAME -> result.sameContent.isNotEmpty()
+                Tab.SUBCLIP -> result.subclips.isNotEmpty()
+                Tab.IMAGES -> result.images.isNotEmpty()
+            }
+            if (tabHasItems) {
+                Row(
+                    Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("Kijelölés:", color = C.text3, fontSize = 13.sp)
+                    for (rule in BulkSelect.rulesFor(vm.tab == Tab.SUBCLIP, vm.tab == Tab.EXACT)) {
+                        BulkChip(rule.label) { vm.applyBulk(rule) }
+                    }
                 }
             }
         }
@@ -930,5 +949,20 @@ private fun DiagnosticsCard(lines: List<String>) {
                 ) { Text("Másolás") }
             }
         }
+    }
+}
+
+@Composable
+private fun BulkChip(label: String, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .height(36.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(C.surface)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, color = C.accentText, fontSize = 13.sp, fontWeight = FontWeight.Medium)
     }
 }

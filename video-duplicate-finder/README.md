@@ -24,6 +24,14 @@ A frissítések a régi verzióra telepíthetők (azonos aláíró kulcs: `app/a
 | **Részlet** | egy hosszabb videóból kivágott rövidebb | **10-nél több** egyező képkocka azonos időeltolással; az idővonal mutatja a kivágott szakaszt |
 | **Képek** | pontosan azonos és hasonló (átméretezett) képek | méret + hash, illetve 64 bites képujjlenyomat |
 
+### Tömeges kijelölés
+
+A fülek alatti **Kijelölés:** sáv az aktuális fül összes találatára érvényes (a fül eddigi
+kijelölését lecseréli): *Régebbi*, *Újabb*, *Eredeti* és *Vágott* (Részlet fül),
+*Alacsonyabb felbontású*, *Rosszabb minőségű* (felbontás, azonos felbontásnál videón
+bitráta, képen fájlméret), *Semmi*. Ahol egy csoportban nincs különbség, ott nem jelöl ki
+semmit.
+
 ### Képkocka-összevetés
 
 * Mintavétel: **10 másodpercenként 1 kocka** (beállítható).
