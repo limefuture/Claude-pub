@@ -334,7 +334,7 @@ fun ResultsScreen(vm: MainViewModel, result: ScanResult, onRescan: () -> Unit, o
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Vissza", tint = C.text)
                 }
                 Text(
-                    "${result.folderLabel} · ${Format.count(result.fileCount)} fájl",
+                    result.folderLabel,
                     color = C.text2,
                     fontSize = 13.sp,
                     maxLines = 1,
@@ -350,6 +350,17 @@ fun ResultsScreen(vm: MainViewModel, result: ScanResult, onRescan: () -> Unit, o
                     color = C.text2,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
+                )
+                Text(
+                    if (result.fileCount == 0) {
+                        "A mappában nem találtam videót vagy képet."
+                    } else {
+                        "${Format.count(result.fileCount)} fájl átnézve" +
+                            if (result.notIndexed > 0) ", ebből ${Format.count(result.notIndexed)} a médiatáron kívül" else ""
+                    },
+                    color = if (result.fileCount == 0) C.accentText else C.text3,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
             Row(

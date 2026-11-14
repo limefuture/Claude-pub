@@ -52,6 +52,8 @@ data class ScanResult(
     val images: List<DupGroup>,
     /** Korábban összeomlást okozó, ezért kihagyott fájlok */
     val skippedFiles: List<String> = emptyList(),
+    /** A rendszer médiatárában nem szereplő (közvetlenül a mappából olvasott) fájlok száma */
+    val notIndexed: Int = 0,
 ) {
     val totalReclaimable: Long
         get() = (exact + sameContent + images).sumOf { it.reclaimable }
@@ -93,6 +95,7 @@ data class ScanOptions(
     val volume: String,
     val relativePath: String,
     val label: String,
+    val treeUri: String?,
     val includeSubfolders: Boolean,
     val videos: Boolean,
     val images: Boolean,

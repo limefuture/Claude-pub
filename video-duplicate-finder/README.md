@@ -51,6 +51,11 @@ indítsd újra a vizsgálatot.
 * A mappát a rendszer mappaválasztójával lehet kijelölni (ugyanazok a mappák, mint a
   Saját fájlokban). A `Download` mappa gyökerét az Android nem engedi kiválasztani, csak
   az almappáit.
+* Az app a mappa tényleges tartalmát olvassa (a mappaválasztóban adott hozzáféréssel), így
+  azokat a fájlokat is látja, amelyek nincsenek a rendszer médiatárában (pl. egyes letöltők
+  mappái, amelyek a Galériában sem jelennek meg).
+* A médiatárban nem szereplő fájlok nem tehetők a rendszerkukába: ezekre az app külön
+  megerősítést kér, és véglegesen törli őket.
 * A törlés az Android rendszerkukájába tesz (a rendszer jóváhagyást kér), 30 napig
   visszaállítható. Hogy ez a gyártói fájlkezelő Kuka mappájában is látszik-e, a
   telefontól függ – az app saját **Kuka** képernyőjén (kezdőképernyő, kuka ikon) mindig

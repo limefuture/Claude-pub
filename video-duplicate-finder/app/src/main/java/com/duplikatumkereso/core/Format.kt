@@ -38,9 +38,37 @@ data class FolderRef(
     /** MediaStore RELATIVE_PATH formátum: "DCIM/Camera/" (gyökérnél üres) */
     val relativePath: String,
     val label: String,
+    /** A mappaválasztótól kapott (tartós) hozzáférés URI-ja; régi mentésnél null. */
+    val treeUri: String? = null,
 ) {
     companion object {
-        fun fromDocumentId(documentId: String): FolderRef? {
+        private val videoExt = setOf("mp4", "m4v", "mkv", "mov", "avi", "webm", "3gp", "3g2", "ts", "mts", "m2ts", "wmv", "flv", "mpg", "mpeg")
+        private val imageExt = setOf("jpg", "jpeg", "png", "webp", "heic", "heif", "gif", "bmp", "avif")
+
+        /** true = videó, false = kép, null = egyik sem (a MIME típus vagy a kiterjesztés alapján). */
+        fun mediaKind(mime: String?, name: String): Boolean? {
+            val m = mime.orEmpty().lowercase(Locale.ROOT)
+            if (m.startsWith("video/")) return true
+            if (m.startsWith("image/")) return false
+            val ext = name.substringAfterLast('.', "").lowercase(Locale.ROOT)
+            return when (ext) {
+                in videoExt -> true
+                in imageExt -> false
+                else -> null
+            }
+        }
+
+        /** Dokumentum-azonosítóból ("primary:Download/a/b.mp4") a szülőmappa RELATIVE_PATH formában ("Download/a/"). */
+        fun parentRelativePath(documentId: String): String {
+            val path = documentId.substringAfter(':').trim('/')
+            val parent = path.substringBeforeLast('/', "")
+            return if (parent.isEmpty()) "" else "$parent/"
+        }
+
+        fun fromDocumentId(documentId: String, treeUri: String? = null): FolderRef? =
+            fromDocumentIdInternal(documentId)?.copy(treeUri = treeUri)
+
+        private fun fromDocumentIdInternal(documentId: String): FolderRef? {
             val idx = documentId.indexOf(':')
             if (idx <= 0) return null
             val vol = documentId.substring(0, idx)

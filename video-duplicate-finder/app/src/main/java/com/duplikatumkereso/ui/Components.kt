@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.LruCache
-import android.util.Size
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.duplikatumkereso.data.MediaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -63,7 +63,7 @@ fun Thumb(uri: Uri, isVideo: Boolean, modifier: Modifier = Modifier) {
         if (bmp == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
-                    ctx.contentResolver.loadThumbnail(uri, Size(256, 256), null).asImageBitmap()
+                    MediaRepository(ctx).loadPreview(uri, isVideo, 256)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) {

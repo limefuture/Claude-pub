@@ -15,6 +15,8 @@ class VideoFingerprint(
     val intervalMs: Long,
     val hashes: LongArray,
     val valid: BooleanArray,
+    val width: Int = 0,
+    val height: Int = 0,
 ) {
     init {
         require(hashes.size == valid.size)

@@ -144,6 +144,13 @@ class MatcherTest {
         assertEquals("Movies/", sd.relativePath)
         assertEquals("", FolderRef.fromDocumentId("primary:")!!.relativePath)
         assertNull(FolderRef.fromDocumentId("nincs-kettospont"))
+        assertEquals("tree", FolderRef.fromDocumentId("primary:Movies", "tree")!!.treeUri)
+        assertEquals("Download/MEGA Downloads/", FolderRef.parentRelativePath("primary:Download/MEGA Downloads/a.mp4"))
+        assertEquals("", FolderRef.parentRelativePath("primary:a.mp4"))
+        assertEquals(true, FolderRef.mediaKind("application/octet-stream", "Film.MKV"))
+        assertEquals(true, FolderRef.mediaKind("video/mp4", "x"))
+        assertEquals(false, FolderRef.mediaKind(null, "kep.HEIC"))
+        assertNull(FolderRef.mediaKind("text/plain", "leiras.txt"))
         assertEquals("My\\_Videos/%", FolderRef.likePattern("My_Videos/", true))
         assertEquals("100\\%/", FolderRef.likePattern("100%/", false))
     }

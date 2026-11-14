@@ -16,7 +16,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.DocumentsContract
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -77,16 +76,20 @@ fun App(vm: MainViewModel = viewModel()) {
     var lastCrash by remember { mutableStateOf(DupApp.takeLastCrash(ctx)) }
 
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
-        if (uri != null) vm.setFolderFromDocumentId(DocumentsContract.getTreeDocumentId(uri))
+        if (uri != null) vm.setFolder(uri)
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        if (hasFullMediaAccess(ctx)) vm.startScan() else showPermissionHelp = true
+        if (!hasFullMediaAccess(ctx)) {
+            showPermissionHelp = true
+        } else if (!vm.startScan()) {
+            folderPicker.launch(null)
+        }
     }
 
     fun requestScan() {
         if (hasFullMediaAccess(ctx)) {
-            vm.startScan()
+            if (!vm.startScan()) folderPicker.launch(null)
             return
         }
         val perms = if (Build.VERSION.SDK_INT >= 33) {
@@ -179,6 +182,30 @@ fun App(vm: MainViewModel = viewModel()) {
             },
             dismissButton = {
                 TextButton(onClick = { lastCrash = null }) { Text("Bezárás") }
+            },
+        )
+    }
+
+    if (vm.pendingPermanentDelete.isNotEmpty()) {
+        val items = vm.pendingPermanentDelete
+        AlertDialog(
+            onDismissRequest = vm::cancelPermanentDelete,
+            title = { Text("Végleges törlés?") },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text(
+                        "${items.size} kijelölt fájl nem szerepel a rendszer médiatárában, ezért nem tehető kukába, " +
+                            "csak véglegesen törölhető (nem visszaállítható):",
+                    )
+                    items.take(20).forEach { Text("• ${it.name}", fontSize = 13.sp) }
+                    if (items.size > 20) Text("… és még ${items.size - 20}", fontSize = 13.sp)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = vm::confirmPermanentDelete) { Text("Végleges törlés", color = C.danger) }
+            },
+            dismissButton = {
+                TextButton(onClick = vm::cancelPermanentDelete) { Text("Mégse") }
             },
         )
     }

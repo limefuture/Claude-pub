@@ -47,5 +47,9 @@ class AppSettings(context: Context) {
         get() = prefs.getString("lastFolder", null)
         set(v) = prefs.edit().putString("lastFolder", v).apply()
 
-    fun lastFolder(): FolderRef? = lastFolderDocId?.let { FolderRef.fromDocumentId(it) }
+    var lastTreeUri: String?
+        get() = prefs.getString("lastTree", null)
+        set(v) = prefs.edit().putString("lastTree", v).apply()
+
+    fun lastFolder(): FolderRef? = lastFolderDocId?.let { FolderRef.fromDocumentId(it, lastTreeUri) }
 }

@@ -5,6 +5,8 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.provider.DocumentsContract
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
@@ -96,6 +98,124 @@ class MediaRepository(private val context: Context) {
         return result
     }
 
+    /**
+     * A kiválasztott mappa tényleges tartalma a mappaválasztótól kapott hozzáférésen át.
+     * A rendszer médiatárában (MediaStore) nem szereplő fájlokat is látja (pl. egyes letöltők
+     * mappái); ahol a fájl a médiatárban is megvan, annak adatait (hossz, felbontás) használjuk.
+     */
+    fun listFolder(o: ScanOptions): ListResult {
+        val fromMediaStore = runCatching { query(o) }.getOrDefault(emptyList())
+        val treeUri = o.treeUri?.let { Uri.parse(it) }
+            ?: return ListResult(fromMediaStore, 0)
+        val byPath = fromMediaStore.associateBy { (it.relativePath + it.name).lowercase() }
+
+        val out = ArrayList<MediaItem>()
+        var notIndexed = 0
+        val stack = ArrayDeque<String>()
+        stack.add(o.documentId)
+        val cols = arrayOf(
+            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+            DocumentsContract.Document.COLUMN_MIME_TYPE,
+            DocumentsContract.Document.COLUMN_SIZE,
+            DocumentsContract.Document.COLUMN_LAST_MODIFIED,
+        )
+        while (stack.isNotEmpty()) {
+            val parent = stack.removeLast()
+            val children = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, parent)
+            val cursor = try {
+                resolver.query(children, cols, null, null, null)
+            } catch (e: Exception) {
+                null // pl. elveszett hozzáférés: ezt a mappát kihagyjuk
+            }
+            cursor?.use { c ->
+                while (c.moveToNext()) {
+                    val docId = c.getString(0) ?: continue
+                    val name = c.getString(1) ?: continue
+                    val mime = c.getString(2)
+                    if (name.startsWith(".")) continue // rejtett és kukában lévő (.trashed-) fájlok
+                    if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
+                        if (o.includeSubfolders) stack.add(docId)
+                        continue
+                    }
+                    val isVideo = FolderRef.mediaKind(mime, name) ?: continue
+                    if (isVideo && !o.videos || !isVideo && !o.images) continue
+                    val rel = FolderRef.parentRelativePath(docId)
+                    val indexed = byPath[(rel + name).lowercase()]
+                    if (indexed != null) {
+                        out.add(indexed)
+                        continue
+                    }
+                    notIndexed++
+                    val size = if (c.isNull(3)) 0L else c.getLong(3)
+                    out.add(
+                        MediaItem(
+                            id = documentItemId(docId),
+                            uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId),
+                            name = name,
+                            relativePath = rel,
+                            size = size,
+                            mime = mime?.takeIf { it.contains('/') && it != "application/octet-stream" }
+                                ?: if (isVideo) "video/*" else "image/*",
+                            isVideo = isVideo,
+                            durationMs = 0,
+                            width = 0,
+                            height = 0,
+                            dateModified = if (c.isNull(4)) 0 else c.getLong(4) / 1000,
+                            volume = o.volume,
+                        ),
+                    )
+                }
+            }
+        }
+        // Ha a mappahozzáférés valamiért nem adott vissza semmit, a médiatár eredménye marad.
+        return if (out.isEmpty()) ListResult(fromMediaStore, 0) else ListResult(out, notIndexed)
+    }
+
+    data class ListResult(val items: List<MediaItem>, val notIndexed: Int)
+
+    /** Stabil, negatív azonosító a médiatárban nem szereplő fájloknak (nem ütközik a MediaStore id-kkel). */
+    private fun documentItemId(docId: String): Long {
+        val bits = java.util.UUID.nameUUIDFromBytes(docId.toByteArray()).mostSignificantBits
+        return -(bits ushr 1) - 1
+    }
+
+    /** Előnézeti kép: rendszer-bélyegkép, ha nincs, a videó egy kockája vagy a kép kicsinyítve. */
+    fun loadPreview(uri: Uri, isVideo: Boolean, size: Int): Bitmap? {
+        runCatching { return resolver.loadThumbnail(uri, Size(size, size), null) }
+        return if (isVideo) {
+            val r = MediaMetadataRetriever()
+            try {
+                r.setDataSource(context, uri)
+                r.getScaledFrameAtTime(1_000_000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, size, size)
+            } catch (e: Exception) {
+                null
+            } finally {
+                runCatching { r.release() }
+            }
+        } else {
+            runCatching {
+                ImageDecoder.decodeBitmap(ImageDecoder.createSource(resolver, uri)) { decoder, info, _ ->
+                    val w = info.size.width
+                    val h = info.size.height
+                    val scale = max(1, max(w, h) / size)
+                    decoder.setTargetSize(max(1, w / scale), max(1, h / scale))
+                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                }
+            }.getOrNull()
+        }
+    }
+
+    /** Médiatárbeli megfelelő (kukázáshoz), ha van; null, ha a fájl nincs a médiatárban. */
+    fun mediaStoreUriFor(item: MediaItem): Uri? {
+        if (item.uri.authority == MediaStore.AUTHORITY) return item.uri
+        return runCatching { MediaStore.getMediaUri(context, item.uri) }.getOrNull()
+    }
+
+    /** Végleges törlés a mappahozzáférésen át (médiatárban nem szereplő fájloknál). */
+    fun deleteDocument(uri: Uri): Boolean =
+        runCatching { DocumentsContract.deleteDocument(resolver, uri) }.getOrDefault(false)
+
     /** Méret + 3 × 1 MB (eleje, közepe, vége): gyors előszűrés azonos méretű fájlokhoz. */
     fun partialHash(item: MediaItem): String {
         val chunk = 1 shl 20
@@ -168,7 +288,11 @@ class MediaRepository(private val context: Context) {
                 hashes[i] = ImageHash.dHash(gray)
                 valid[i] = ImageHash.isInformative(gray)
             }
-            return VideoFingerprint(item.id, duration, start, intervalMs, hashes, valid)
+            var w = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 0
+            var h = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 0
+            val rot = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)?.toIntOrNull() ?: 0
+            if (rot == 90 || rot == 270) w = h.also { h = w }
+            return VideoFingerprint(item.id, duration, start, intervalMs, hashes, valid, w, h)
         } catch (e: Exception) {
             return null
         } finally {
@@ -178,8 +302,7 @@ class MediaRepository(private val context: Context) {
 
     /** Kép ujjlenyomata a rendszer bélyegképéből; null, ha nem olvasható. */
     fun imageHash(item: MediaItem): Long? = try {
-        val bm = resolver.loadThumbnail(item.uri, Size(64, 64), null)
-        ImageHash.dHash(toGray9x8(bm))
+        loadPreview(item.uri, isVideo = false, size = 64)?.let { ImageHash.dHash(toGray9x8(it)) }
     } catch (e: Exception) {
         null
     }

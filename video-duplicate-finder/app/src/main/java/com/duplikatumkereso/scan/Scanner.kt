@@ -38,10 +38,11 @@ class Scanner(
         // 1. Fájlok listázása a MediaStore-ból (méret, hossz, felbontás egyből megvan)
         report(ScanProgress.Running("Fájlok listázása", 0, 0))
         val skipped = guard.skipped()
-        val allItems = repo.query(o)
+        val listing = repo.listFolder(o)
+        val allItems = listing.items
         val items = allItems.filter { it.cacheKey !in skipped }
         val skippedHere = allItems.filter { it.cacheKey in skipped }.map { "${it.relativePath}${it.name}" }
-        val byId = items.associateBy { it.id }
+        val byId = HashMap(items.associateBy { it.id })
 
         // 2. Pontos egyezés: azonos méret -> részleges hash -> teljes hash
         val sizeGroups = items.filter { it.size > 0 }.groupBy { it.size }.values.filter { it.size > 1 }
@@ -116,6 +117,18 @@ class Scanner(
             }
             ensureActive()
 
+            // A médiatárban nem szereplő videóknál a hossz és a felbontás az elemzésből jön.
+            for (item in videos) {
+                val fp = fps[item.id] ?: continue
+                if (item.durationMs <= 0 || item.width <= 0) {
+                    byId[item.id] = item.copy(
+                        durationMs = if (item.durationMs > 0) item.durationMs else fp.durationMs,
+                        width = if (item.width > 0) item.width else fp.width,
+                        height = if (item.height > 0) item.height else fp.height,
+                    )
+                }
+            }
+
             report(ScanProgress.Running("Videók összevetése", 0, 0))
             val params = MatchParams(
                 frameThreshold = o.frameThreshold,
@@ -179,15 +192,22 @@ class Scanner(
             }
         }
 
+        // A pontos másolatok bájtra azonosak: a hosszt/felbontást a megtartott (elemzett) példánytól kapják.
+        val exactEnriched = exactVideo.map { g ->
+            val rep = byId[g.keepId]
+            if (rep == null) g else g.copy(items = g.items.map { it.copy(durationMs = rep.durationMs, width = rep.width, height = rep.height) })
+        }
+
         ScanResult(
             createdAt = System.currentTimeMillis(),
             folderLabel = o.label,
             fileCount = items.size,
-            exact = exactVideo.sortedByDescending { it.reclaimable },
+            exact = exactEnriched.sortedByDescending { it.reclaimable },
             sameContent = sameContent.sortedByDescending { it.reclaimable },
             subclips = subclips.sortedByDescending { it.short.size },
             images = imageGroups.sortedByDescending { it.reclaimable },
             skippedFiles = skippedHere,
+            notIndexed = listing.notIndexed,
         )
     }
 }

@@ -12,10 +12,10 @@ import java.nio.ByteBuffer
  * eltároljuk, így a következő vizsgálat csak az új vagy módosult fájlokat dolgozza fel.
  * A kulcs tartalmazza a méretet és a módosítás idejét, így módosult fájl új kulcsot kap.
  */
-class FingerprintCache(context: Context) : SQLiteOpenHelper(context, "ujjlenyomatok.db", null, 1) {
+class FingerprintCache(context: Context) : SQLiteOpenHelper(context, "ujjlenyomatok.db", null, 2) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("CREATE TABLE video (k TEXT PRIMARY KEY, duration INTEGER, start INTEGER, interval INTEGER, data BLOB)")
+        db.execSQL("CREATE TABLE video (k TEXT PRIMARY KEY, duration INTEGER, start INTEGER, interval INTEGER, data BLOB, w INTEGER, h INTEGER)")
         db.execSQL("CREATE TABLE image (k TEXT PRIMARY KEY, hash INTEGER)")
         db.execSQL("CREATE TABLE filehash (k TEXT PRIMARY KEY, partial TEXT, full TEXT)")
     }
@@ -32,7 +32,7 @@ class FingerprintCache(context: Context) : SQLiteOpenHelper(context, "ujjlenyoma
 
     fun getVideo(item: MediaItem, intervalMs: Long, accurate: Boolean): VideoFingerprint? {
         readableDatabase.rawQuery(
-            "SELECT duration, start, interval, data FROM video WHERE k = ?",
+            "SELECT duration, start, interval, data, w, h FROM video WHERE k = ?",
             arrayOf(videoKey(item, intervalMs, accurate)),
         ).use { c ->
             if (!c.moveToFirst()) return null
@@ -45,7 +45,7 @@ class FingerprintCache(context: Context) : SQLiteOpenHelper(context, "ujjlenyoma
                 hashes[i] = buf.getLong()
                 valid[i] = buf.get().toInt() != 0
             }
-            return VideoFingerprint(item.id, c.getLong(0), c.getLong(1), c.getLong(2), hashes, valid)
+            return VideoFingerprint(item.id, c.getLong(0), c.getLong(1), c.getLong(2), hashes, valid, c.getInt(4), c.getInt(5))
         }
     }
 
@@ -61,6 +61,8 @@ class FingerprintCache(context: Context) : SQLiteOpenHelper(context, "ujjlenyoma
             put("start", fp.startMs)
             put("interval", fp.intervalMs)
             put("data", buf.array())
+            put("w", fp.width)
+            put("h", fp.height)
         }
         writableDatabase.insertWithOnConflict("video", null, v, SQLiteDatabase.CONFLICT_REPLACE)
     }

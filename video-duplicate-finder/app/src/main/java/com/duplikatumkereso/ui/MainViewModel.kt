@@ -2,7 +2,9 @@ package com.duplikatumkereso.ui
 
 import android.app.Application
 import android.content.IntentSender
+import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,6 +15,7 @@ import com.duplikatumkereso.data.AppSettings
 import com.duplikatumkereso.data.CrashGuard
 import com.duplikatumkereso.data.FingerprintCache
 import com.duplikatumkereso.data.GroupKind
+import com.duplikatumkereso.data.MediaItem
 import com.duplikatumkereso.data.MediaRepository
 import com.duplikatumkereso.data.ScanOptions
 import com.duplikatumkereso.data.ScanProgress
@@ -85,18 +88,39 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             .flatMap { g -> g.items.filter { it.id != g.keepId }.map { it.id } }
             .toSet()
 
-    fun setFolderFromDocumentId(docId: String) {
-        val f = FolderRef.fromDocumentId(docId)
+    /** A mappaválasztó eredménye: a hozzáférést tartósan megtartjuk, hogy később is olvasható legyen. */
+    fun setFolder(treeUri: Uri) {
+        val app = getApplication<Application>()
+        val docId = DocumentsContract.getTreeDocumentId(treeUri)
+        val f = FolderRef.fromDocumentId(docId, treeUri.toString())
         if (f == null) {
             message = "Ezt a mappát nem lehet vizsgálni. Válassz egy mappát a belső tárhelyen vagy az SD-kártyán."
             return
         }
+        runCatching {
+            app.contentResolver.takePersistableUriPermission(
+                treeUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            )
+        }
         folder = f
         settings.lastFolderDocId = docId
+        settings.lastTreeUri = treeUri.toString()
     }
 
-    fun startScan() {
-        val f = folder ?: return
+    private fun hasFolderAccess(f: FolderRef): Boolean {
+        val tree = f.treeUri ?: return false
+        return getApplication<Application>().contentResolver.persistedUriPermissions
+            .any { it.uri.toString() == tree && it.isReadPermission }
+    }
+
+    /** false: a mappát újra ki kell választani (a hozzáférés elveszett vagy régi mentés). */
+    fun startScan(): Boolean {
+        val f = folder ?: return true
+        if (!hasFolderAccess(f)) {
+            message = "Válaszd ki újra a mappát, hogy az app hozzáférjen a tartalmához."
+            return false
+        }
         settings.includeSubfolders = includeSubfolders
         settings.scanVideos = scanVideos
         settings.scanImages = scanImages
@@ -105,6 +129,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             volume = f.volume,
             relativePath = f.relativePath,
             label = f.label,
+            treeUri = f.treeUri,
             includeSubfolders = includeSubfolders,
             videos = scanVideos,
             images = scanImages,
@@ -117,6 +142,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         )
         ScanState.progress.value = ScanProgress.Running("Indítás", 0, 0)
         ScanService.start(getApplication())
+        return true
     }
 
     fun cancelScan() = ScanState.cancel()
@@ -139,14 +165,34 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         return all.distinctBy { it.id }.filter { it.id in selection }.sumOf { it.size }
     }
 
+    /** A médiatárban nem szereplő, csak véglegesen törölhető kijelölt fájlok (megerősítésre vár). */
+    var pendingPermanentDelete by mutableStateOf<List<MediaItem>>(emptyList())
+        private set
+    private var docsAfterTrash: List<MediaItem> = emptyList()
+
+    /**
+     * Kukázás előkészítése. A médiatárban szereplő fájlok a rendszerkukába kerülnek (rendszer-
+     * jóváhagyással); a többit csak véglegesen lehet törölni, arra külön megerősítést kérünk.
+     */
     fun trashRequestForSelection(): IntentSender? {
         val r = result.value ?: return null
         val all = ((r.exact + r.sameContent + r.images).flatMap { it.items } +
             r.subclips.flatMap { listOf(it.long, it.short) }).distinctBy { it.id }
         val chosen = all.filter { it.id in selection }
         if (chosen.isEmpty()) return null
-        pendingTrash = chosen.map { it.id }.toSet()
-        return repo.trashRequest(chosen.map { it.uri }).intentSender
+        val media = ArrayList<Pair<MediaItem, Uri>>()
+        val docs = ArrayList<MediaItem>()
+        for (item in chosen) {
+            val u = repo.mediaStoreUriFor(item)
+            if (u != null) media.add(item to u) else docs.add(item)
+        }
+        if (media.isEmpty()) {
+            pendingPermanentDelete = docs
+            return null
+        }
+        docsAfterTrash = docs
+        pendingTrash = media.map { it.first.id }.toSet()
+        return repo.trashRequest(media.map { it.second }).intentSender
     }
 
     fun onTrashResult(ok: Boolean) {
@@ -157,6 +203,29 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             message = "${removed.size} fájl a kukába került (30 napig visszaállítható)."
         }
         pendingTrash = emptySet()
+        if (ok && docsAfterTrash.isNotEmpty()) pendingPermanentDelete = docsAfterTrash
+        docsAfterTrash = emptyList()
+    }
+
+    fun cancelPermanentDelete() {
+        pendingPermanentDelete = emptyList()
+    }
+
+    fun confirmPermanentDelete() {
+        val items = pendingPermanentDelete
+        pendingPermanentDelete = emptyList()
+        viewModelScope.launch {
+            val removed = withContext(Dispatchers.IO) {
+                items.filter { repo.deleteDocument(it.uri) }.map { it.id }.toSet()
+            }
+            ScanState.result.value = ScanState.result.value?.without(removed)
+            selection = selection - removed
+            message = if (removed.size == items.size) {
+                "${removed.size} fájl véglegesen törölve."
+            } else {
+                "${removed.size} / ${items.size} fájl törölve; a többit nem sikerült."
+            }
+        }
     }
 
     // ---- Kuka ----
