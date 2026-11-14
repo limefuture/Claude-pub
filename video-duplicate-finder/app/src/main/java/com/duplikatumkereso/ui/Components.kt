@@ -32,7 +32,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,13 +58,18 @@ private object ThumbCache {
 fun Thumb(uri: Uri, isVideo: Boolean, modifier: Modifier = Modifier) {
     val ctx = LocalContext.current
     val key = uri.toString()
-    val bmp by produceState<ImageBitmap?>(ThumbCache.cache.get(key), key) {
-        if (value == null) {
-            value = withContext(Dispatchers.IO) {
+    var bmp by remember(key) { mutableStateOf<ImageBitmap?>(ThumbCache.cache.get(key)) }
+    LaunchedEffect(key) {
+        if (bmp == null) {
+            val loaded = withContext(Dispatchers.IO) {
                 runCatching {
                     ctx.contentResolver.loadThumbnail(uri, Size(256, 256), null).asImageBitmap()
                 }.getOrNull()
-            }?.also { ThumbCache.cache.put(key, it) }
+            }
+            if (loaded != null) {
+                ThumbCache.cache.put(key, loaded)
+                bmp = loaded
+            }
         }
     }
     Box(

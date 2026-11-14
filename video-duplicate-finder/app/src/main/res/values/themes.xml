@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="bg">#FF111316</color>
-    <color name="accent">#FFFF9A55</color>
 
     <style name="Theme.Duplikatumkereso" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/bg</item>
