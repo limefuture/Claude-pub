@@ -1,0 +1,46 @@
+name: Duplikátumkereső APK
+
+on:
+  push:
+    paths:
+      - "video-duplicate-finder/**"
+      - ".github/workflows/video-duplicate-finder.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: video-duplicate-finder
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+
+      - name: Tesztek és APK készítése
+        run: gradle --no-daemon testReleaseUnitTest assembleRelease
+
+      - name: Ellenőrzés – nincs internet-engedély
+        run: |
+          AAPT=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$AAPT" dump permissions app/build/outputs/apk/release/app-release.apk | tee perms.txt
+          if grep -q "android.permission.INTERNET" perms.txt; then
+            echo "HIBA: az APK internet-engedélyt kér!"; exit 1
+          fi
+
+      - name: APK átnevezése
+        run: cp app/build/outputs/apk/release/app-release.apk Duplikatumkereso.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Duplikatumkereso-apk
+          path: video-duplicate-finder/Duplikatumkereso.apk
+          retention-days: 30
