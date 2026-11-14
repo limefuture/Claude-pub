@@ -244,7 +244,12 @@ private fun RoundIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, lab
 // ------------------------------------------------------------------ Vizsgálat folyamatban
 
 @Composable
-fun ScanningScreen(p: ScanProgress.Running, onCancel: () -> Unit) {
+fun ScanningScreen(p: ScanProgress.Running, runsInBackground: Boolean, onCancel: () -> Unit) {
+    val view = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.DisposableEffect(runsInBackground) {
+        view.keepScreenOn = !runsInBackground
+        onDispose { view.keepScreenOn = false }
+    }
     Column(
         Modifier
             .fillMaxSize()
@@ -283,13 +288,24 @@ fun ScanningScreen(p: ScanProgress.Running, onCancel: () -> Unit) {
         if (p.detail.isNotEmpty()) {
             Text(p.detail, color = C.text3, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        Text(
-            "A vizsgálat a háttérben is fut, a telefon nyugodtan lezárható. " +
-                "Az elemzett videókat megjegyzi, így a következő keresés sokkal gyorsabb.",
-            color = C.text2,
-            fontSize = 13.sp,
-            lineHeight = 19.sp,
-        )
+        if (runsInBackground) {
+            Text(
+                "A vizsgálat a háttérben is fut, a telefon nyugodtan lezárható. " +
+                    "Az elemzett videókat megjegyzi, így a következő keresés sokkal gyorsabb.",
+                color = C.text2,
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+            )
+        } else {
+            Text(
+                "A telefon nem engedi, hogy a vizsgálat a háttérben fusson. Tartsd nyitva az appot, " +
+                    "és ne zárd le a képernyőt. Ha mégis megszakad, az eddig elemzett fájlokat megjegyzi, " +
+                    "újraindításkor onnan folytatja.",
+                color = C.accentText,
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+            )
+        }
         Spacer(Modifier.weight(1f))
         OutlinedButton(
             onClick = onCancel,

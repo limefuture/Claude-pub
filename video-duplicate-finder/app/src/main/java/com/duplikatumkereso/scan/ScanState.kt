@@ -11,6 +11,9 @@ object ScanState {
     val progress = MutableStateFlow<ScanProgress>(ScanProgress.Idle)
     val result = MutableStateFlow<ScanResult?>(null)
 
+    /** false: a rendszer nem engedte a háttérfuttatást, az appnak nyitva kell maradnia. */
+    val runsInBackground = MutableStateFlow(true)
+
     @Volatile
     var pendingOptions: ScanOptions? = null
 

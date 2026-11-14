@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 class ScanService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var lastNotify = 0L
+    private var isForeground = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -42,7 +43,10 @@ class ScanService : Service() {
         }
         val options = ScanState.pendingOptions
         createChannel()
-        startInForeground(buildNotification("Vizsgálat indul…", 0, 0))
+        if (!isForeground) {
+            isForeground = startInForeground(buildNotification("Vizsgálat indul…", 0, 0))
+            ScanState.runsInBackground.value = isForeground
+        }
         if (options == null || ScanState.job?.isActive == true) {
             if (ScanState.job?.isActive != true) stopSelf()
             return START_NOT_STICKY
@@ -68,7 +72,11 @@ class ScanService : Service() {
             } finally {
                 guard.finish()
                 cache.close()
-                ServiceCompat.stopForeground(this@ScanService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+                if (isForeground) {
+                    ServiceCompat.stopForeground(this@ScanService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+                }
+                getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID)
+                isForeground = false
                 stopSelf()
             }
         }
@@ -86,16 +94,30 @@ class ScanService : Service() {
         super.onDestroy()
     }
 
-    private fun startInForeground(n: Notification) {
-        val type = if (Build.VERSION.SDK_INT >= 35) {
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
-        } else {
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+    /**
+     * Előtérszolgáltatás indítása. Egyes gyártói rendszerek (pl. realme UI 7 / Android 16)
+     * elutasítják a "médiafeldolgozás" típust, ezért sorban több típust próbálunk.
+     * Ha egyik sem megy, a vizsgálat sima szolgáltatásként fut tovább (amíg az app nyitva van);
+     * a szolgáltatást startService-szel indítjuk, így ez nem okoz leállást.
+     */
+    private fun startInForeground(n: Notification): Boolean {
+        val types = buildList {
+            if (Build.VERSION.SDK_INT >= 35) add(ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING)
+            add(ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         }
-        ServiceCompat.startForeground(this, NOTIFICATION_ID, n, type)
+        for (type in types) {
+            try {
+                ServiceCompat.startForeground(this, NOTIFICATION_ID, n, type)
+                return true
+            } catch (e: Exception) {
+                // következő típus
+            }
+        }
+        return false
     }
 
     private fun notifyProgress(p: ScanProgress.Running) {
+        if (!isForeground) return
         val now = System.currentTimeMillis()
         if (now - lastNotify < 1000) return
         lastNotify = now
@@ -142,7 +164,9 @@ class ScanService : Service() {
         const val ACTION_STOP = "com.duplikatumkereso.STOP"
 
         fun start(context: Context) {
-            context.startForegroundService(Intent(context, ScanService::class.java))
+            // Sima startService: az app ilyenkor előtérben van, így ez engedélyezett, és nem kötelez
+            // 5 mp-en belüli startForeground hívásra (ha a rendszer azt elutasítja, nem áll le az app).
+            context.startService(Intent(context, ScanService::class.java))
         }
     }
 }

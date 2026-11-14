@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
 import com.duplikatumkereso.DupApp
+import com.duplikatumkereso.scan.ScanState
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -71,6 +72,7 @@ fun App(vm: MainViewModel = viewModel()) {
     val ctx = LocalContext.current
     val progress by vm.progress.collectAsStateWithLifecycle()
     val result by vm.result.collectAsStateWithLifecycle()
+    val runsInBackground by ScanState.runsInBackground.collectAsStateWithLifecycle()
     var showPermissionHelp by remember { mutableStateOf(false) }
     var lastCrash by remember { mutableStateOf(DupApp.takeLastCrash(ctx)) }
 
@@ -134,7 +136,7 @@ fun App(vm: MainViewModel = viewModel()) {
     ) {
         val p = progress
         when {
-            p is ScanProgress.Running -> ScanningScreen(p, onCancel = vm::cancelScan)
+            p is ScanProgress.Running -> ScanningScreen(p, runsInBackground, onCancel = vm::cancelScan)
             vm.screen == Screen.Results && result != null -> ResultsScreen(
                 vm = vm,
                 result = result!!,
