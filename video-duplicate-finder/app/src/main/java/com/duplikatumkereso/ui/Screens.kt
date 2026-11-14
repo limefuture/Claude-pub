@@ -542,6 +542,8 @@ private fun SubclipCard(vm: MainViewModel, m: SubclipMatch) {
     val ctx = LocalContext.current
     SectionCard {
         CardHeader("Kivágott részlet", "${m.matchedFrames} egyező kocka")
+        Text("Eredeti (hosszabb)", color = C.text3, fontSize = 12.sp)
+        FileRow(vm, m.long, keep = false)
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(
                 Modifier
@@ -579,17 +581,18 @@ private fun SubclipCard(vm: MainViewModel, m: SubclipMatch) {
                 Text(Format.duration(m.long.durationMs), color = C.text3, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
             }
         }
+        Text("Összevágott / kivágott (rövidebb)", color = C.text3, fontSize = 12.sp)
         FileRow(vm, m.short, keep = false)
         Text(
             if (m.segments.size == 1) {
                 "A rövidebb videó (${Format.duration(m.short.durationMs)}) a hosszabb " +
                     "${Format.duration(m.startMs)} és ${Format.duration(m.endMs)} közötti szakaszából készült. " +
-                    "Ha külön is kell, ne töröld."
+                    "Jelöld ki, melyiket szeretnéd törölni."
             } else {
                 "A rövidebb videó (${Format.duration(m.short.durationMs)}) a hosszabb ${m.segments.size} részletéből " +
                     "van összevágva: " +
                     m.segments.joinToString(", ") { "${Format.duration(it.first)}–${Format.duration(it.second)}" } +
-                    ". Ha külön is kell, ne töröld."
+                    ". Jelöld ki, melyiket szeretnéd törölni."
             },
             color = C.text2,
             fontSize = 12.sp,
@@ -772,6 +775,28 @@ fun SettingsScreen(vm: MainViewModel) {
             }
             Text(
                 "Kikapcsolva a legközelebbi kulcskockát használja, ami többszörösen gyorsabb.",
+                color = C.text3,
+                fontSize = 12.sp,
+            )
+        }
+
+        SectionCard {
+            CardHeader("Részlet-találatok", "")
+            Text("Alapból kijelölve törlésre:", color = C.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            var choice by remember { mutableIntStateOf(s.subclipDefault) }
+            Row(
+                Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                listOf("Semmi", "A hosszabb (eredeti)", "A rövidebb").forEachIndexed { i, label ->
+                    Pill(label, choice == i) {
+                        choice = i
+                        s.subclipDefault = i
+                    }
+                }
+            }
+            Text(
+                "A következő vizsgálattól érvényes. Kijelölés után is minden kártyán átállítható.",
                 color = C.text3,
                 fontSize = 12.sp,
             )

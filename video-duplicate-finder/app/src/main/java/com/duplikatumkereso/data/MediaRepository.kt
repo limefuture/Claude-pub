@@ -290,7 +290,21 @@ class MediaRepository(private val context: Context) {
      * Képkockák kiolvasása [intervalMs] időközönként, a videó intervalMs/2 pontjától.
      * A kockákat a dekóder eleve kicsiben adja vissza, így a felbontás nem számít.
      */
+    private val fastReader = FastFrameReader(context)
+    val fastCount = java.util.concurrent.atomic.AtomicInteger()
+    val slowCount = java.util.concurrent.atomic.AtomicInteger()
+
+    /** Először a gyors (egy dekóderes) módszer; ha az nem megy, a rendszer kockakérő funkciója. */
     fun videoFingerprint(item: MediaItem, intervalMs: Long, accurate: Boolean, isCancelled: () -> Boolean): VideoFingerprint? {
+        fastReader.fingerprint(item, intervalMs, accurate, isCancelled)?.let {
+            fastCount.incrementAndGet()
+            return it
+        }
+        if (isCancelled()) return null
+        return slowFingerprint(item, intervalMs, accurate, isCancelled)?.also { slowCount.incrementAndGet() }
+    }
+
+    private fun slowFingerprint(item: MediaItem, intervalMs: Long, accurate: Boolean, isCancelled: () -> Boolean): VideoFingerprint? {
         val r = MediaMetadataRetriever()
         try {
             r.setDataSource(context, item.uri)

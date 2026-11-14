@@ -100,7 +100,9 @@ class Scanner(
             val intervalMs = o.intervalSec * 1000L
             val fps = ConcurrentHashMap<Long, VideoFingerprint>()
             val done = AtomicInteger(0)
-            val sem = Semaphore(2) // a hardveres dekóderek száma korlátos
+            val sem = Semaphore(3) // a hardveres dekóderek száma korlátos
+            val framesStarted = System.currentTimeMillis()
+            val computed = AtomicInteger(0)
             coroutineScope {
                 videos.map { item ->
                     async {
@@ -108,6 +110,7 @@ class Scanner(
                             ensureActive()
                             val fp = cache.getVideo(item, intervalMs, o.accurateFrames)
                                 ?: guard.guard(item) {
+                                    computed.incrementAndGet()
                                     repo.videoFingerprint(item, intervalMs, o.accurateFrames, cancelled)
                                 }?.also {
                                     if (!cancelled()) cache.putVideo(item, o.accurateFrames, it)
@@ -143,6 +146,14 @@ class Scanner(
             val matches = analysis.mapNotNull { it.second }
 
             // Diagnosztika (csak számok): videónként a kockák, páronként az egyezések.
+            val framesSec = (System.currentTimeMillis() - framesStarted) / 1000.0
+            diagnostics.add(
+                String.format(
+                    java.util.Locale.forLanguageTag("hu-HU"),
+                    "Képkockák kiolvasása: %.1f mp, %d videó újonnan elemezve (gyors módszer: %d, régi módszer: %d), %d a tárolt adatokból.",
+                    framesSec, computed.get(), repo.fastCount.get(), repo.slowCount.get(), videos.size - computed.get(),
+                ),
+            )
             diagnostics.add("Beállítás: ${o.intervalSec} mp-enként 1 kocka, részlethez >${o.minMatches} egyező kocka, kockánként ≤${o.frameThreshold} bit eltérés.")
             for (item in videos.sortedBy { it.name }.take(100)) {
                 val fp = fps[item.id]

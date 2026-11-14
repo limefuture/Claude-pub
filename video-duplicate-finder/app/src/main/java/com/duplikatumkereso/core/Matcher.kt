@@ -220,7 +220,7 @@ object Matcher {
             endMs = sc.segments.maxOf { it.second },
             matchedFrames = sc.consistent,
             ratio = ratio,
-            segments = sc.segments,
+            segments = sc.segments.sortedBy { it.first },
         )
     }
 

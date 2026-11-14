@@ -83,10 +83,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun defaultSelection(r: ScanResult): Set<Long> =
-        (r.exact + r.images.filter { it.kind == GroupKind.IMAGE_EXACT })
+    private fun defaultSelection(r: ScanResult): Set<Long> {
+        val exact = (r.exact + r.images.filter { it.kind == GroupKind.IMAGE_EXACT })
             .flatMap { g -> g.items.filter { it.id != g.keepId }.map { it.id } }
-            .toSet()
+        val subclips = when (settings.subclipDefault) {
+            1 -> r.subclips.map { it.long.id }
+            2 -> r.subclips.map { it.short.id }
+            else -> emptyList()
+        }
+        return (exact + subclips).toSet()
+    }
 
     /** A mappaválasztó eredménye: a hozzáférést tartósan megtartjuk, hogy később is olvasható legyen. */
     fun setFolder(treeUri: Uri) {

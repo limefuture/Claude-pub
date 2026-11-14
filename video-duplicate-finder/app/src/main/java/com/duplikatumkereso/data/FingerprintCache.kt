@@ -28,7 +28,7 @@ class FingerprintCache(context: Context) : SQLiteOpenHelper(context, "ujjlenyoma
     }
 
     private fun videoKey(item: MediaItem, intervalMs: Long, accurate: Boolean) =
-        "${item.cacheKey}/$intervalMs/${if (accurate) "p" else "g"}"
+        "${item.cacheKey}/$intervalMs/${if (accurate) "p" else "g"}/f2"
 
     fun getVideo(item: MediaItem, intervalMs: Long, accurate: Boolean): VideoFingerprint? {
         readableDatabase.rawQuery(

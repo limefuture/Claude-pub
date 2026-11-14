@@ -31,6 +31,11 @@ class AppSettings(context: Context) {
         get() = prefs.getBoolean("accurateFrames", false)
         set(v) = prefs.edit().putBoolean("accurateFrames", v).apply()
 
+    /** Részlet-találatnál alapból kijelölve: 0 = semmi, 1 = a hosszabb (eredeti), 2 = a rövidebb. */
+    var subclipDefault: Int
+        get() = prefs.getInt("subclipDefault", 0)
+        set(v) = prefs.edit().putInt("subclipDefault", v).apply()
+
     var includeSubfolders: Boolean
         get() = prefs.getBoolean("includeSubfolders", true)
         set(v) = prefs.edit().putBoolean("includeSubfolders", v).apply()
