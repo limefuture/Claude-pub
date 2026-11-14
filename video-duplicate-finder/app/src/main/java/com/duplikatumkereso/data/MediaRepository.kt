@@ -133,7 +133,12 @@ class MediaRepository(private val context: Context) {
                     val docId = c.getString(0) ?: continue
                     val name = c.getString(1) ?: continue
                     val mime = c.getString(2)
-                    if (name.startsWith(".")) continue // rejtett és kukában lévő (.trashed-) fájlok
+                    // A rejtett (ponttal kezdődő) mappákat és fájlokat is vizsgáljuk; csak a
+                    // rendszer belső fájljait hagyjuk ki: .nomedia, kukában lévő és félkész fájlok.
+                    if (name.equals(".nomedia", ignoreCase = true) ||
+                        name.startsWith(".trashed-") ||
+                        name.startsWith(".pending-")
+                    ) continue
                     if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
                         if (o.includeSubfolders) stack.add(docId)
                         continue
